@@ -1,0 +1,116 @@
+<Page
+    x:Class="WinControl.Pages.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+
+    <Grid Padding="20,20,20,12" ColumnSpacing="28">
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <!-- coluna da esquerda: blocos de ação e cenas -->
+        <StackPanel Spacing="18">
+            <Grid ColumnSpacing="10" RowSpacing="10">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
+                <!-- Lâmpada: clicar liga/desliga, a seta abre a página completa -->
+                <StackPanel Spacing="6">
+                    <Grid ColumnSpacing="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ToggleButton x:Name="LampTile" Style="{StaticResource TileToggleStyle}" CornerRadius="4,0,0,4"
+                                      Click="LampTile_Click" ToolTipService.ToolTip="Ligar ou desligar a lâmpada">
+                            <FontIcon Glyph="&#xEA80;" FontSize="16" />
+                        </ToggleButton>
+                        <Button Grid.Column="1" Style="{StaticResource TileChevronStyle}" Click="OpenLamp_Click"
+                                ToolTipService.ToolTip="Mais opções da lâmpada">
+                            <FontIcon Glyph="&#xE76C;" FontSize="12" />
+                        </Button>
+                    </Grid>
+                    <TextBlock Text="Lâmpada" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+
+                <!-- Projetar: o mesmo do Win+P / Fn+F7 -->
+                <StackPanel Grid.Column="1" Spacing="6">
+                    <Grid ColumnSpacing="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <Button Style="{StaticResource TileButtonStyle}" CornerRadius="4,0,0,4" Click="OpenProject_Click"
+                                ToolTipService.ToolTip="Projetar (Win+P / Fn+F7)">
+                            <FontIcon Glyph="&#xEBC6;" FontSize="16" />
+                        </Button>
+                        <Button Grid.Column="1" Style="{StaticResource TileChevronStyle}" Click="OpenProject_Click"
+                                ToolTipService.ToolTip="Modos de projeção">
+                            <FontIcon Glyph="&#xE76C;" FontSize="12" />
+                        </Button>
+                    </Grid>
+                    <TextBlock x:Name="ProjectCaption" Text="Projetar" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Column="2" Spacing="6">
+                    <Button Style="{StaticResource TileButtonStyle}" Click="Rotate_Click"
+                            ToolTipService.ToolTip="Girar o LG FULL HD (Ctrl+Alt+R)">
+                        <FontIcon Glyph="&#xE7AD;" FontSize="16" />
+                    </Button>
+                    <TextBlock Text="Girar monitor" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Spacing="6">
+                    <ToggleButton x:Name="ThemeTile" Style="{StaticResource TileToggleStyle}" Click="ThemeTile_Click"
+                                  ToolTipService.ToolTip="Tema escuro (Win+Ctrl+Shift+D)">
+                        <FontIcon Glyph="&#xE708;" FontSize="16" />
+                    </ToggleButton>
+                    <TextBlock Text="Tema escuro" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Grid.Column="1" Spacing="6">
+                    <ToggleButton x:Name="AgendaTile" Style="{StaticResource TileToggleStyle}" Click="AgendaTile_Click"
+                                  ToolTipService.ToolTip="Agenda automática das telas">
+                        <FontIcon Glyph="&#xE787;" FontSize="16" />
+                    </ToggleButton>
+                    <TextBlock Text="Agenda" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+
+                <StackPanel Grid.Row="1" Grid.Column="2" Spacing="6">
+                    <ToggleButton x:Name="JoinTile" Style="{StaticResource TileToggleStyle}" Click="JoinTile_Click"
+                                  ToolTipService.ToolTip="Mover o brilho de todas as telas juntas">
+                        <FontIcon Glyph="&#xE71B;" FontSize="16" />
+                    </ToggleButton>
+                    <TextBlock Text="Telas juntas" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+            </Grid>
+
+            <!-- cenas: só uma de cada vez -->
+            <StackPanel Spacing="8">
+                <TextBlock Text="Cenas" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <Grid x:Name="Scenes" ColumnSpacing="10" />
+            </StackPanel>
+        </StackPanel>
+
+        <!-- coluna da direita: brilho de cada tela e status -->
+        <StackPanel Grid.Column="1" Spacing="14">
+            <TextBlock Text="Brilho" Style="{StaticResource BodyStrongTextBlockStyle}" />
+            <StackPanel x:Name="Sliders" Spacing="10" />
+            <StackPanel Spacing="2" Margin="0,4,0,0">
+                <TextBlock x:Name="LampLine" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                <TextBlock x:Name="AgendaLine" Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+        </StackPanel>
+    </Grid>
+</Page>

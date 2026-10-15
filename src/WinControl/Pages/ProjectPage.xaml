@@ -1,0 +1,68 @@
+<Page
+    x:Class="WinControl.Pages.ProjectPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <!-- cabeçalho de subpágina: voltar + título, como o do Wi-Fi nas Configurações rápidas -->
+        <StackPanel Orientation="Horizontal" Spacing="4" Padding="8,12,20,8">
+            <Button Style="{StaticResource SubtleButtonStyle}" Padding="10,8" Click="Back_Click"
+                    ToolTipService.ToolTip="Voltar">
+                <FontIcon Glyph="&#xE76B;" FontSize="12" />
+            </Button>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="Projetar" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                <TextBlock Text="O mesmo do Win+P e do Fn+F7. Se algo der errado, o Win+P sempre desfaz."
+                           Style="{StaticResource CaptionTextBlockStyle}"
+                           Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+        </StackPanel>
+
+        <Grid Grid.Row="1" Padding="20,8,20,16" ColumnSpacing="12">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <ToggleButton x:Name="PcOnly" Tag="PcScreenOnly" Click="Mode_Click" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Top" Padding="12,18">
+                <StackPanel Spacing="8">
+                    <FontIcon Glyph="&#xE7F8;" FontSize="24" />
+                    <TextBlock Text="Só a tela do PC" HorizontalAlignment="Center" />
+                    <TextBlock Text="Apaga os monitores; fica só o notebook" TextWrapping="Wrap" TextAlignment="Center"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </ToggleButton>
+
+            <ToggleButton x:Name="Extend" Grid.Column="1" Tag="Extend" Click="Mode_Click" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Top" Padding="12,18">
+                <StackPanel Spacing="8">
+                    <FontIcon Glyph="&#xE8A9;" FontSize="24" />
+                    <TextBlock Text="Estender" HorizontalAlignment="Center" />
+                    <TextBlock Text="Todas as telas ligadas" TextWrapping="Wrap" TextAlignment="Center"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </ToggleButton>
+
+            <ToggleButton x:Name="SecondOnly" Grid.Column="2" Tag="SecondScreenOnly" Click="Mode_Click" HorizontalAlignment="Stretch"
+                          VerticalAlignment="Top" Padding="12,18">
+                <StackPanel Spacing="8">
+                    <FontIcon Glyph="&#xE7F4;" FontSize="24" />
+                    <TextBlock Text="Só a segunda tela" HorizontalAlignment="Center" />
+                    <TextBlock Text="Apaga o notebook; ficam os monitores" TextWrapping="Wrap" TextAlignment="Center"
+                               Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                </StackPanel>
+            </ToggleButton>
+        </Grid>
+    </Grid>
+</Page>
