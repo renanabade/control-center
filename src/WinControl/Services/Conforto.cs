@@ -89,14 +89,41 @@ public static class Conforto
         return string.Join(" · ", parts);
     }
 
+    /// <summary>
+    /// Brilho/temperatura que a lâmpada deve usar quando eu for ligá-la: o que a última cena pediu (ex.: Noite = 1% quente).
+    /// Cena e agenda nunca ligam a lâmpada sozinhas; elas só deixam isso combinado para o próximo "ligar".
+    /// </summary>
+    public static (int b, int t)? PendingLamp;
+
+    /// <summary>
+    /// A parte da lâmpada de uma cena ou item da agenda. Nunca acende a lâmpada: se ela já está ligada, só ajusta
+    /// brilho e temperatura; se está desligada, guarda o ajuste para o próximo "ligar". Uma cena que apaga a luz
+    /// ("ligada": false) só apaga quando eu mesmo a escolho, nunca pela agenda.
+    /// </summary>
+    public static void ApplyLampPart(JsonObject lp, bool auto)
+    {
+        bool wantOn = lp["ligada"]?.GetValue<bool>() ?? true;
+        if (!wantOn)
+        {
+            PendingLamp = null;
+            if (!auto) Lamp.WithBusy(() => Lamp.PowerOff());
+            return;
+        }
+        int? b = lp["brilho"]?.GetValue<int>(), t = lp["temperatura"]?.GetValue<int>();
+        if (b != null) PendingLamp = (b.Value, t ?? Lamp.Cur.T);
+        Lamp.RefreshState();                                 // não confia no cache: ligar/desligar pode ter sido pelo app da Tuya
+        if (Lamp.Cur.On && Lamp.Cur.Online)
+            Lamp.ApplyWhite(b ?? Lamp.Cur.B, t ?? Lamp.Cur.T);
+    }
+
     /// <summary>Aplica uma cena ou item da agenda. Bloqueia enquanto fala com a lâmpada: chame numa thread.</summary>
-    public static void Apply(JsonObject spec, string? nome = null)
+    public static void Apply(JsonObject spec, string? nome = null, bool auto = false)
     {
         if (spec["cena"] is { } c)
         {
             var cena = Cenas.OfType<JsonObject>().FirstOrDefault(x => x["nome"]?.ToString() == c.ToString());
             if (cena == null) { Log.Write($"Agenda: cena '{c}' nao existe"); return; }
-            Apply(cena, cena["nome"]!.ToString());
+            Apply(cena, cena["nome"]!.ToString(), auto);
             return;
         }
         if (spec["tema"] is { } tema) Theme.SetDark(tema.ToString() == "escuro");
@@ -106,13 +133,7 @@ public static class Conforto
                 Screens.SetByName(map.ToDictionary(kv => kv.Key, kv => kv.Value!.GetValue<int>()));
             else Screens.SetByName(telas.GetValue<int>());
         }
-        if (spec["lampada"] is JsonObject lp)
-        {
-            if (lp["ligada"]?.GetValue<bool>() ?? true)
-                Lamp.WithBusy(() => Lamp.PowerOn(lp["brilho"]?.GetValue<int>(), lp["temperatura"]?.GetValue<int>()));
-            else
-                Lamp.WithBusy(() => Lamp.PowerOff());
-        }
+        if (spec["lampada"] is JsonObject lp) ApplyLampPart(lp, auto);
         Cena = nome;
         Log.Write($"Aplicado: {nome ?? Describe(spec)}");
         Bus.Notify();
@@ -184,7 +205,7 @@ public static class Conforto
                         if (_lastSlot != slot)
                         {
                             _lastSlot = slot;
-                            Apply(item);
+                            Apply(item, auto: true);   // a agenda nunca liga nem desliga a lâmpada
                         }
                     }
                 }

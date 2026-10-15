@@ -32,6 +32,35 @@ public static class SelfTest
             var (item, day) = Conforto.CurrentSlot();
             P($"AGENDA em vigor={item?["hora"]} ({Conforto.Describe(item!)}) desde {day}");
 
+            if (Environment.GetCommandLineArgs().Contains("--selftest-scenes"))
+            {
+                // só a parte da lâmpada das cenas (não mexe em tema nem brilho das telas)
+                var noite = (System.Text.Json.Nodes.JsonObject)Conforto.Cenas.OfType<System.Text.Json.Nodes.JsonObject>()
+                    .First(x => x["nome"]?.ToString() == "Noite")["lampada"]!;
+                var trabalho = (System.Text.Json.Nodes.JsonObject)Conforto.Cenas.OfType<System.Text.Json.Nodes.JsonObject>()
+                    .First(x => x["nome"]?.ToString() == "Trabalho")["lampada"]!;
+                Lamp.RefreshState();
+                P($"CENAS inicio: ligada={c.On}");
+                Conforto.ApplyLampPart(noite, auto: false);
+                Lamp.RefreshState();
+                P($"  cena Noite com lampada DESLIGADA: ligada={c.On} (esperado False), combinado={Conforto.PendingLamp}");
+                Conforto.ApplyLampPart(trabalho, auto: true);
+                Lamp.RefreshState();
+                P($"  agenda 'Trabalho' com lampada DESLIGADA: ligada={c.On} (esperado False), combinado={Conforto.PendingLamp}");
+                Conforto.ApplyLampPart(noite, auto: false);
+                Lamp.PowerOn();
+                Lamp.RefreshState();
+                P($"  ligar apos Noite: ligada={c.On} brilho={c.B}% temp={c.T} (esperado True 1% 0)");
+                Conforto.ApplyLampPart(trabalho, auto: true);
+                Lamp.RefreshState();
+                P($"  agenda 'Trabalho' com lampada LIGADA: ligada={c.On} brilho={c.B}% temp={c.T} (esperado True 50% 50)");
+                Lamp.PowerOff();
+                Conforto.PendingLamp = null;
+                Lamp.RefreshState();
+                P($"  fim: ligada={c.On}");
+                Lamp.ApplyWhite(1, 0);   // sem efeito com ela desligada; o estado guardado é restaurado abaixo
+            }
+
             if (Environment.GetCommandLineArgs().Contains("--selftest-theme"))
             {
                 bool before = Theme.IsDark();

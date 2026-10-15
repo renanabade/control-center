@@ -154,12 +154,16 @@ public static class Lamp
         }
     }
 
-    /// <summary>Liga pelo PC. Sem preset explícito: conforme a Luz Noturna. Cancela timer pendente.</summary>
+    /// <summary>
+    /// Liga pelo PC. Sem preset explícito: o que a última cena combinou (ex.: Noite = 1% quente); sem cena, conforme a
+    /// Luz Noturna. Cancela timer pendente.
+    /// </summary>
     public static bool PowerOn(int? b = null, int? t = null)
     {
         int bb, tt;
-        if (b == null) (bb, tt) = Theme.NightLightOn() ? (1, 0) : (50, 50);
-        else { bb = b.Value; tt = t ?? Cur.T; }
+        if (b != null) { bb = b.Value; tt = t ?? Cur.T; }
+        else if (Conforto.PendingLamp is { } p) (bb, tt) = p;
+        else (bb, tt) = Theme.NightLightOn() ? (1, 0) : (50, 50);
         var dps = WhiteDps(bb, tt);
         dps["20"] = true;
         dps["26"] = 0;
