@@ -1,4 +1,4 @@
-using Microsoft.UI.Dispatching;
+﻿using Microsoft.UI.Dispatching;
 using Microsoft.UI.Xaml;
 using WinControl.Services;
 
@@ -64,7 +64,7 @@ public partial class App : Application
 
     public static void Quit()
     {
-        Log.Write("win-control encerrado");
+        Log.Write("control-center encerrado");
         Tray?.Dispose();
         Environment.Exit(0);
     }

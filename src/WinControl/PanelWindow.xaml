@@ -1,8 +1,8 @@
-<Window
+﻿<Window
     x:Class="WinControl.PanelWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    Title="Win Control">
+    Title="Control Center">
 
     <Window.SystemBackdrop>
         <DesktopAcrylicBackdrop />
@@ -22,7 +22,7 @@
                 Background="{ThemeResource LayerOnAcrylicFillColorDefaultBrush}"
                 BorderBrush="{ThemeResource DividerStrokeColorDefaultBrush}">
             <Grid>
-                <TextBlock Text="Win Control" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" />
+                <TextBlock Text="Control Center" VerticalAlignment="Center" Style="{StaticResource CaptionTextBlockStyle}" />
                 <Button HorizontalAlignment="Right" Style="{StaticResource SubtleButtonStyle}" Padding="8,6"
                         ToolTipService.ToolTip="Configurações">
                     <FontIcon Glyph="&#xE713;" FontSize="14" />

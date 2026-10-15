@@ -1,4 +1,4 @@
-﻿# win-control
+﻿# control-center
 
 Central de controle do Windows na bandeja, feita em C# com WinUI 3: lâmpada Tuya pela rede local, brilho dos monitores
 (DDC/CI e WMI), tema claro/escuro e Luz Noturna, cenas, agenda, projetar (Win+P) e giro de um monitor por atalho.

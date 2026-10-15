@@ -19,7 +19,7 @@ public sealed class Tray : IDisposable
         var baseImg = new Dr.Bitmap(Path.Combine(AppContext.BaseDirectory, "Assets", "icon.png"));
         foreach (var s in new[] { "on", "off", "offline" }) _icons[s] = MakeIcon(baseImg, s);
 
-        _icon = new WF.NotifyIcon { Icon = _icons["off"], Text = "Win Control", Visible = true, ContextMenuStrip = _menu };
+        _icon = new WF.NotifyIcon { Icon = _icons["off"], Text = "Control Center", Visible = true, ContextMenuStrip = _menu };
         _icon.MouseClick += (_, e) => { if (e.Button == WF.MouseButtons.Left) togglePanel(); };
         _menu.Opening += (_, _) => BuildMenu(quit);
 

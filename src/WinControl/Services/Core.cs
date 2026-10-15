@@ -173,7 +173,7 @@ public static class Core
         new Thread(NightWatcher) { IsBackground = true, Name = "luz-noturna" }.Start();
         new Thread(Poller) { IsBackground = true, Name = "lampada-poller" }.Start();
         Hotkeys.Start(() => { Theme.Toggle(); Conforto.Cena = null; Bus.Notify(); }, () => RotateFromHotkey?.Invoke());
-        Log.Write("win-control iniciado");
+        Log.Write("control-center iniciado");
     }
 
     /// <summary>A bandeja assina isto para mostrar o resultado do giro.</summary>
