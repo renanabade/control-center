@@ -38,12 +38,33 @@ public static class Lamp
         ["905"] = "inacessivel: VPN bloqueando a rede local, IP errado ou lampada sem energia",
         ["902"] = "a lampada nao respondeu a tempo",
         ["914"] = "local_key ou versao errada (lampada readicionada no app?)",
+        ["key"] = "rode o pegar_chave.py para buscar a chave",
     };
 
     public static void Load()
     {
+        if (!File.Exists(AppPaths.Lamp))
+        {
+            // cria o modelo no lugar certo: quem for configurar já acha o arquivo (e o log diz onde ele está)
+            File.WriteAllText(AppPaths.Lamp, """
+            { "id": "SEU_DEVICE_ID", "ip": "", "local_key": "SUA_LOCAL_KEY", "version": 3.3, "ble_mac": "" }
+            """);
+        }
         try { _cfg = JsonNode.Parse(File.ReadAllText(AppPaths.Lamp)) as JsonObject ?? new(); }
         catch (Exception e) { Log.Write($"lamp_config.json invalido: {e.Message}"); }
+        if (ConfigProblem is { } p) Log.Write($"Lampada nao configurada: {p} -> {AppPaths.Lamp} (veja docs/lampada.md)");
+    }
+
+    /// <summary>O que falta na config para falar com a lâmpada, ou null se ela está completa.</summary>
+    public static string? ConfigProblem
+    {
+        get
+        {
+            string id = _cfg["id"]?.ToString() ?? "", key = _cfg["local_key"]?.ToString() ?? "";
+            if (id.Length == 0 || id == "SEU_DEVICE_ID") return "falta o id";
+            if (key.Length != 16) return "falta a local_key";
+            return null;
+        }
     }
 
     private static void SaveCfg() =>
@@ -155,22 +176,37 @@ public static class Lamp
     }
 
     /// <summary>
-    /// Liga pelo PC. Sem preset explícito: o que a última cena combinou (ex.: Noite = 1% quente); sem cena, conforme a
-    /// Luz Noturna. Cancela timer pendente.
+    /// Liga pelo PC. Sem preset explícito: o que a última cena combinou (ex.: Noite = 1% quente), uma vez só; sem cena,
+    /// volta como estava quando apagou. Cancela timer pendente.
     /// </summary>
     public static bool PowerOn(int? b = null, int? t = null)
     {
-        int bb, tt;
-        if (b != null) { bb = b.Value; tt = t ?? Cur.T; }
-        else if (Conforto.PendingLamp is { } p) (bb, tt) = p;
-        else (bb, tt) = Theme.NightLightOn() ? (1, 0) : (50, 50);
-        var dps = WhiteDps(bb, tt);
+        // sem preset nem cena pendente: só liga, e a lâmpada volta sozinha ao último brilho/temperatura/cor
+        (int, int)? preset = b != null ? (b.Value, t ?? Cur.T) : Conforto.PendingLamp;
+        Conforto.PendingLamp = null;                         // a cena vale para um "ligar", não para sempre
+        var dps = preset is var (pb, pt) ? WhiteDps(pb, pt) : new JsonObject();
         dps["20"] = true;
         dps["26"] = 0;
-        if (Call(Tuya.CmdControl, Dps(dps)) == null) return false;
-        Cur.On = true; Cur.B = bb; Cur.T = tt; Cur.Mode = "white"; Cur.Timer = 0; Cur.TimerOpt = null;
+        if (Call(Tuya.CmdControl, Dps(dps)) == null)
+        {
+            // Wi-Fi dormindo (lâmpada apagada há muito tempo): acorda pelo Bluetooth e depois acerta brilho pelo Wi-Fi
+            if (!HasBle || !Ble.TurnOn(BleMac, _cfg["local_key"]?.ToString() ?? "")) return false;
+            Cur.Online = true;
+            Task.Run(() =>
+            {
+                Thread.Sleep(2500);
+                if (Call(Tuya.CmdControl, Dps(dps)) == null) Log.Write("BLE: ligou, mas o Wi-Fi ainda nao voltou");
+                Bus.Notify();
+            });
+        }
+        Cur.On = true; Cur.Timer = 0; Cur.TimerOpt = null;
+        if (preset is var (sb, st)) { Cur.B = sb; Cur.T = st; Cur.Mode = "white"; }
+        else RefreshState();                                 // pega o estado que a lâmpada restaurou
         return true;
     }
+
+    private static string BleMac => _cfg["ble_mac"]?.ToString() ?? "";
+    public static bool HasBle => Ble.ParseMac(BleMac) != null;
 
     public static bool PowerOff()
     {
@@ -224,7 +260,12 @@ public static class Lamp
     public static void TogglePower() => WithBusy(() =>
     {
         // se estava offline, o "ligada/desligada" do cache pode estar velho: relê antes
-        if (!Cur.Online && !RefreshState()) return;
+        if (!Cur.Online && !RefreshState())
+        {
+            // sem Wi-Fi: com Bluetooth configurado, a lâmpada provavelmente está apagada e dormindo, então liga
+            if (HasBle) PowerOn();
+            return;
+        }
         if (Cur.On) PowerOff(); else PowerOn();
     });
 

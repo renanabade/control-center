@@ -24,6 +24,45 @@ public static class Theme
         catch { return false; }
     }
 
+    /// <summary>
+    /// Liga/desliga a Luz Noturna regravando o estado no CloudStore: byte 18 = 0x15 (ligada) ou 0x13, com o campo
+    /// 0x10 0x00 inserido/removido na posição 23, e o carimbo de tempo (bytes 10-14) avançado para o Windows notar.
+    /// </summary>
+    /// <summary>Quando o app mudou a Luz Noturna (por uma cena): o tema automático não deve desfazer o tema da cena.</summary>
+    public static DateTime NightLightSetAt = DateTime.MinValue;
+
+    public static void SetNightLight(bool on)
+    {
+        if (NightLightOn() == on) return;
+        try
+        {
+            using var k = Registry.CurrentUser.OpenSubKey(NightLightKey, writable: true);
+            if (k?.GetValue("Data") is not byte[] d || d.Length < 25) { Log.Write("Luz Noturna: estado nao encontrado no registro"); return; }
+            byte[] n;
+            if (on)
+            {
+                n = new byte[d.Length + 2];
+                Array.Copy(d, n, 23);
+                Array.Copy(d, 23, n, 25, d.Length - 23);
+                n[18] = 0x15; n[23] = 0x10; n[24] = 0x00;
+            }
+            else
+            {
+                n = new byte[d.Length - 2];
+                Array.Copy(d, n, 23);
+                Array.Copy(d, 25, n, 23, d.Length - 25);
+                n[18] = 0x13;
+            }
+            for (int i = 10; i < 15; i++)
+                if (n[i] != 0xFF) { n[i]++; break; }
+            NightLightSetAt = DateTime.UtcNow;
+            k.SetValue("Data", n, RegistryValueKind.Binary);
+            Log.Write($"Luz Noturna: {(on ? "ligada" : "desligada")}");
+        }
+        catch (Exception e) { Log.Write($"Luz Noturna: falha ao mudar ({e.Message})"); }
+        Bus.Notify();
+    }
+
     private static int? Read(string name)
     {
         try

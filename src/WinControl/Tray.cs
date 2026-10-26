@@ -140,6 +140,7 @@ public sealed class Tray : IDisposable
         _menu.Items.Add(new WF.ToolStripSeparator());
         _menu.Items.Add(Item("Iniciar com o Windows", Core.ToggleAutostart, check: Core.AutostartEnabled()));
         _menu.Items.Add(Item("Editar cenas e agenda", () => Process.Start("notepad.exe", AppPaths.Conforto)));
+        _menu.Items.Add(Item("Abrir pasta de configuração", () => Process.Start("explorer.exe", AppPaths.Dir)));
         _menu.Items.Add(Item("Abrir log", () => Process.Start(new ProcessStartInfo(AppPaths.LogFile) { UseShellExecute = true })));
         _menu.Items.Add(new WF.ToolStripSeparator());
         _menu.Items.Add(Item("Sair", () => Ui.Run(quit)));

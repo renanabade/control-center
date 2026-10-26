@@ -121,7 +121,9 @@ public static class Core
                 bool now = Theme.NightLightOn();
                 if (now != prev)
                 {
-                    if (Conforto.Flag("tema_automatico")) Theme.SetDark(now);
+                    prev = now;     // antes da lâmpada: se ela falhar, não reage de novo à mesma mudança
+                    bool byScene = (DateTime.UtcNow - Theme.NightLightSetAt).TotalSeconds < 15;
+                    if (Conforto.Flag("tema_automatico") && !byScene) Theme.SetDark(now);
                     if (now && Lamp.RefreshState() && Lamp.Cur.On)
                     {
                         Lamp.ApplyWhite(1, 0);
@@ -166,6 +168,9 @@ public static class Core
 
     public static void Start()
     {
+        // primeira linha do log: de onde a config vem. Aberto de dentro de outro app empacotado (ex.: Claude), o Windows
+        // pode redirecionar o %APPDATA% para uma cópia isolada, e aí nada do que está na pasta real vale
+        Log.Write($"control-center {typeof(Core).Assembly.GetName().Version} | config em {AppPaths.Dir} | exe {Environment.ProcessPath}");
         Lamp.Load();
         Conforto.Start();
         Screens.Start();

@@ -88,6 +88,9 @@ public static class Tuya
     {
         if (Math.Abs(version - 3.3) > 0.01)
             return new Reply { Err = "ver", Message = $"versao {version} do protocolo nao suportada (so 3.3)" };
+        // a local_key tem 16 caracteres; sem ela (ainda "SUA_LOCAL_KEY") o AES estourava e derrubava cenas e vigias
+        if (Encoding.UTF8.GetByteCount(key) != 16)
+            return new Reply { Err = "key", Message = "local_key ausente ou invalida em lamp_config.json" };
 
         var body = new JsonObject();
         if (cmd == CmdDpQuery) body["gwId"] = devId;

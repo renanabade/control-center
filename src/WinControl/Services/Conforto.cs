@@ -9,6 +9,7 @@ namespace WinControl.Services;
 ///   "lampada": {"ligada": true, "brilho": 1, "temperatura": 0}   ou {"ligada": false}
 ///   "telas": 40 (todas)  ou  {"LG ULTRAGEAR": 40, "Notebook": 20}
 ///   "tema": "escuro" | "claro"
+///   "luz_noturna": true | false
 ///   "cena": "Noite"  (só na agenda: aplica uma cena pelo nome)
 /// Porta do conforto.py.
 /// </summary>
@@ -21,8 +22,8 @@ public static class Conforto
       "agenda_ativa": true,
       "agenda": [ { "hora": "05:00", "telas": 85 }, { "hora": "18:30", "telas": 0 } ],
       "cenas": [
-        { "nome": "Trabalho", "lampada": { "ligada": true, "brilho": 50, "temperatura": 50 }, "telas": 85, "tema": "claro" },
-        { "nome": "Noite", "lampada": { "ligada": true, "brilho": 1, "temperatura": 0 }, "telas": 0, "tema": "escuro" },
+        { "nome": "Trabalho", "lampada": { "ligada": true, "brilho": 50, "temperatura": 50 }, "telas": 85, "tema": "claro", "luz_noturna": false },
+        { "nome": "Noite", "lampada": { "ligada": true, "brilho": 1, "temperatura": 0 }, "telas": 0, "tema": "escuro", "luz_noturna": true },
         { "nome": "Filme", "lampada": { "ligada": false }, "telas": 40, "tema": "escuro" }
       ]
     }
@@ -85,6 +86,7 @@ public static class Conforto
         }
         if (spec["telas"] is { } t) parts.Add(t is JsonObject ? "telas" : $"telas {t}%");
         if (spec["tema"] != null) parts.Add(spec["tema"]!.ToString());
+        if (spec["luz_noturna"] is { } nl) parts.Add(nl.GetValue<bool>() ? "luz noturna" : "sem luz noturna");
         if (spec["cena"] != null) parts.Add($"cena {spec["cena"]}");
         return string.Join(" · ", parts);
     }
@@ -126,6 +128,7 @@ public static class Conforto
             Apply(cena, cena["nome"]!.ToString(), auto);
             return;
         }
+        if (spec["luz_noturna"] is { } nl) Theme.SetNightLight(nl.GetValue<bool>());
         if (spec["tema"] is { } tema) Theme.SetDark(tema.ToString() == "escuro");
         if (spec["telas"] is { } telas)
         {
@@ -133,9 +136,50 @@ public static class Conforto
                 Screens.SetByName(map.ToDictionary(kv => kv.Key, kv => kv.Value!.GetValue<int>()));
             else Screens.SetByName(telas.GetValue<int>());
         }
-        if (spec["lampada"] is JsonObject lp) ApplyLampPart(lp, auto);
+        if (spec["lampada"] is JsonObject lp)
+        {
+            try { ApplyLampPart(lp, auto); }
+            catch (Exception e) { Log.Write($"Cena: falha na parte da lampada ({e.Message})"); }
+        }
         Cena = nome;
         Log.Write($"Aplicado: {nome ?? Describe(spec)}");
+        Bus.Notify();
+    }
+
+    /// <summary>Muda o tema que a cena aplica: "escuro", "claro" ou null (não mexe no tema).</summary>
+    public static void SetSceneTheme(string nome, string? tema)
+    {
+        if (Cenas.OfType<JsonObject>().FirstOrDefault(x => x["nome"]?.ToString() == nome) is not { } cena) return;
+        if (tema == null) cena.Remove("tema"); else cena["tema"] = tema;
+        Save();
+        Bus.Notify();
+    }
+
+    /// <summary>Liga ou desliga a Luz Noturna quando a cena é aplicada.</summary>
+    public static void SetSceneNightLight(string nome, bool on)
+    {
+        if (Cenas.OfType<JsonObject>().FirstOrDefault(x => x["nome"]?.ToString() == nome) is not { } cena) return;
+        cena["luz_noturna"] = on;
+        Save();
+        Bus.Notify();
+    }
+
+    /// <summary>Guarda na cena o estado de agora: lâmpada (brilho/temperatura ou apagada), brilho das telas e tema.</summary>
+    public static void SaveSceneFromCurrent(string nome)
+    {
+        if (Cenas.OfType<JsonObject>().FirstOrDefault(x => x["nome"]?.ToString() == nome) is not { } cena) return;
+        var c = Lamp.Cur;
+        if (c.Online)
+            cena["lampada"] = c.On
+                ? new JsonObject { ["ligada"] = true, ["brilho"] = c.B, ["temperatura"] = c.T }
+                : new JsonObject { ["ligada"] = false };
+        var telas = new JsonObject();
+        foreach (var m in Screens.Monitors.Where(m => m.Ok && m.Value != null)) telas[m.Name] = m.Value!.Value;
+        if (telas.Count > 0) cena["telas"] = telas;
+        cena["tema"] = Theme.IsDark() ? "escuro" : "claro";
+        cena["luz_noturna"] = Theme.NightLightOn();
+        Save();
+        Log.Write($"Cena '{nome}' atualizada: {Describe(cena)}");
         Bus.Notify();
     }
 

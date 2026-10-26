@@ -18,6 +18,8 @@ public sealed partial class PanelWindow : Window
     private const int HeightDip = 410;
     private const int MarginDip = 12;
     private bool _wasActive;
+    private DateTime _shownAt;
+    private readonly DispatcherTimer _focusWatch = new() { Interval = TimeSpan.FromMilliseconds(200) };
 
     public PanelWindow()
     {
@@ -42,6 +44,7 @@ public sealed partial class PanelWindow : Window
             else if (_wasActive) HidePanel();
         };
 
+        _focusWatch.Tick += FocusWatch_Tick;
         Nav.Navigate(typeof(MainPage));
         Bus.Changed += () => Ui.Run(ApplyTheme);
         ApplyTheme();
@@ -68,14 +71,31 @@ public sealed partial class PanelWindow : Window
         _wasActive = false;
         AppWindow.Show();
         Activate();
+        ForceForeground();
+        _shownAt = DateTime.UtcNow;
+        _focusWatch.Start();
         Core.PanelOpen = true;
         Core.PokePoller();          // lê a lâmpada agora, em vez de esperar o próximo ciclo
         Screens.Refresh();
         Bus.Notify();
     }
 
+    /// <summary>
+    /// Clicar fora fecha: o Activated nem sempre chega depois do ForceForeground, então vigia quem tem o foco.
+    /// Janelas do próprio app (menus e popups do WinUI) não contam como "fora".
+    /// </summary>
+    private void FocusWatch_Tick(object? sender, object e)
+    {
+        if (!IsShown) { _focusWatch.Stop(); return; }
+        if ((DateTime.UtcNow - _shownAt).TotalMilliseconds < 400) return;
+        GetWindowThreadProcessId(GetForegroundWindow(), out uint pid);
+        if (pid == (uint)Environment.ProcessId) _wasActive = true;
+        else if (_wasActive) HidePanel();     // só depois de ter tido o foco: aberto em segundo plano, fica
+    }
+
     public void HidePanel()
     {
+        _focusWatch.Stop();
         Core.PanelOpen = false;
         _wasActive = false;
         AppWindow.Hide();
@@ -98,6 +118,32 @@ public sealed partial class PanelWindow : Window
 
     [System.Runtime.InteropServices.DllImport("user32.dll")]
     private static extern uint GetDpiForWindow(IntPtr hwnd);
+
+    /// <summary>
+    /// O clique na bandeja deixa o foco com a barra de tarefas (e o menu de ícones ocultos), e o Windows recusa o
+    /// Activate: o painel abria por trás. Pegando carona na fila de entrada de quem tem o foco, ele aceita.
+    /// </summary>
+    private void ForceForeground()
+    {
+        var hwnd = Win32Interop.GetWindowFromWindowId(AppWindow.Id);
+        uint fg = GetWindowThreadProcessId(GetForegroundWindow(), IntPtr.Zero), me = GetCurrentThreadId();
+        bool attached = fg != me && AttachThreadInput(me, fg, true);
+        SetWindowPos(hwnd, new IntPtr(-1), 0, 0, 0, 0, 0x0001 | 0x0002 | 0x0040);   // HWND_TOPMOST, sem mover/redimensionar, mostrar
+        BringWindowToTop(hwnd);
+        SetForegroundWindow(hwnd);
+        if (attached) AttachThreadInput(me, fg, false);
+        // ativado com a fila emprestada, o WinUI pode não avisar o Activated: sem isso, clicar fora não fechava
+        if (GetForegroundWindow() == hwnd) _wasActive = true;
+    }
+
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hwnd, IntPtr pid);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
+    [System.Runtime.InteropServices.DllImport("kernel32.dll")] private static extern uint GetCurrentThreadId();
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool attach);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool SetForegroundWindow(IntPtr hwnd);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool BringWindowToTop(IntPtr hwnd);
+    [System.Runtime.InteropServices.DllImport("user32.dll")] private static extern bool SetWindowPos(IntPtr hwnd, IntPtr after, int x, int y, int cx, int cy, uint flags);
 
     private void Root_KeyDown(object sender, KeyRoutedEventArgs e)
     {
