@@ -77,6 +77,8 @@ public sealed class Tray : IDisposable
         if (title != _title) { _icon.Text = title; _title = title; }
     }
 
+    public void Balloon(string title, string text) => _icon.ShowBalloonTip(2500, title, text, WF.ToolTipIcon.Info);
+
     public void RotateNow()
     {
         Task.Run(() =>
@@ -132,6 +134,23 @@ public sealed class Tray : IDisposable
             proj.DropDownItems.Add(Item(DisplayProjection.Label(m), () => { DisplayProjection.Apply(m); Bus.Notify(); }, check: current == m));
         _menu.Items.Add(proj);
         _menu.Items.Add(Item("Girar monitor (Ctrl+Alt+R)", RotateNow));
+
+        var pad = new WF.ToolStripMenuItem($"Controle: {DualSense.Status()}");
+        pad.DropDownItems.Add(Item("Automático por jogo", () => DualSense.SetAutomatico(!DualSense.Cfg.Automatico), check: DualSense.Cfg.Automatico));
+        foreach (var m in Enum.GetValues<DualSense.Modo>())
+            pad.DropDownItems.Add(Item($"Emular {DualSense.Label(m)}", () => DualSense.SetModo(m), check: DualSense.Efetivo == m));
+        pad.DropDownItems.Add(Item("LED de jogador", () => DualSense.SetPlayerLeds(!DualSense.Cfg.LedsJogador), check: DualSense.Cfg.LedsJogador));        pad.DropDownItems.Add(Item("Editar jogos conhecidos", () => Process.Start("notepad.exe", Jogos.FilePath)));
+        pad.DropDownItems.Add(new WF.ToolStripSeparator());
+        foreach (var v in new[] { 0, 25, 50, 100 })
+            pad.DropDownItems.Add(Item(v == 0 ? "Luz apagada" : $"Luz {v}%", () => DualSense.SetIntensity(v), check: DualSense.Cfg.Intensidade == v));
+        _menu.Items.Add(pad);
+
+        var peri = new WF.ToolStripMenuItem("Periféricos");
+        peri.DropDownItems.Add(Item("Mouse segue o controle", () => { Perifericos.Cfg.Mouse.SeguirControle ^= true; Perifericos.Changed(); },
+                                    check: Perifericos.Cfg.Mouse.SeguirControle));
+        peri.DropDownItems.Add(Item("Teclado segue o controle", () => { Perifericos.Cfg.Teclado.SeguirControle ^= true; Perifericos.Changed(); },
+                                    check: Perifericos.Cfg.Teclado.SeguirControle));
+        _menu.Items.Add(peri);
 
         _menu.Items.Add(new WF.ToolStripSeparator());
         _menu.Items.Add(Item("Tema escuro", () => Core.SetDark(!Theme.IsDark()), check: Theme.IsDark()));

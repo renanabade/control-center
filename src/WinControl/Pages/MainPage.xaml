@@ -21,6 +21,7 @@
                 <Grid.RowDefinitions>
                     <RowDefinition />
                     <RowDefinition />
+                    <RowDefinition />
                 </Grid.RowDefinitions>
 
                 <!-- Lâmpada: clicar liga/desliga, a seta abre a página completa -->
@@ -91,6 +92,24 @@
                         <FontIcon Glyph="&#xE71B;" FontSize="16" />
                     </ToggleButton>
                     <TextBlock Text="Telas juntas" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+
+                <!-- Controle: abre a página do DualSense (luz e emulação) -->
+                <StackPanel Grid.Row="2" Spacing="6">
+                    <Button Style="{StaticResource TileButtonStyle}" Click="OpenDualSense_Click"
+                            ToolTipService.ToolTip="DualSense: luz e emulação">
+                        <FontIcon Glyph="&#xE7FC;" FontSize="16" />
+                    </Button>
+                    <TextBlock x:Name="PadCaption" Text="Controle" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
+
+                <!-- Periféricos: luz do mouse e do teclado -->
+                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="6">
+                    <Button Style="{StaticResource TileButtonStyle}" Click="OpenPerifericos_Click"
+                            ToolTipService.ToolTip="Luz do mouse e do teclado">
+                        <FontIcon Glyph="&#xE765;" FontSize="16" />
+                    </Button>
+                    <TextBlock Text="Periféricos" Style="{StaticResource TileCaptionStyle}" />
                 </StackPanel>
             </Grid>
 
