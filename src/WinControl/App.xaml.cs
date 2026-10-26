@@ -60,6 +60,7 @@ public partial class App : Application
         if (page == "lamp") Panel!.OpenPage(typeof(Pages.LampPage));
         else if (page == "project") Panel!.OpenPage(typeof(Pages.ProjectPage));
         else if (page == "dualsense") Panel!.OpenPage(typeof(Pages.DualSensePage));
+        else if (page == "perifericos") Panel!.OpenPage(typeof(Pages.PerifericosPage));
         else if (!argv.Contains("--background") && page == null) Panel.ShowNearTray();
     }
 

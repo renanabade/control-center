@@ -21,6 +21,7 @@ src/WinControl/
     Screens.cs         brilho dos monitores (DDC/CI e WMI)
     DualSense.cs       DualSense por HID (USB 0x01/0x02, BT 0x31 com CRC32), luz, ViGEm (X360/DS4), HidHide
     Jogos.cs           modo automático: vigia processos (WMI), categorias da Steam (57/58 = DualSense), jogos.json
+    Perifericos.cs     luz do mouse Razer (Chroma) e do teclado Redragon (EVision), seguindo ou não o DualSense
     DisplayProjection.cs, Rotation.cs, Hotkeys.cs
 tools/
   pegar_chave.py       busca id + local_key pelo login QR do Smart Life

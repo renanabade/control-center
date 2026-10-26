@@ -102,6 +102,15 @@
                     </Button>
                     <TextBlock x:Name="PadCaption" Text="Controle" Style="{StaticResource TileCaptionStyle}" />
                 </StackPanel>
+
+                <!-- Periféricos: luz do mouse e do teclado -->
+                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="6">
+                    <Button Style="{StaticResource TileButtonStyle}" Click="OpenPerifericos_Click"
+                            ToolTipService.ToolTip="Luz do mouse e do teclado">
+                        <FontIcon Glyph="&#xE765;" FontSize="16" />
+                    </Button>
+                    <TextBlock Text="Periféricos" Style="{StaticResource TileCaptionStyle}" />
+                </StackPanel>
             </Grid>
 
             <!-- cenas: só uma de cada vez -->

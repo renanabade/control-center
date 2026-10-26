@@ -193,6 +193,8 @@ public sealed partial class MainPage : Page
 
     private void OpenDualSense_Click(object sender, RoutedEventArgs e) => App.Panel?.OpenPage(typeof(DualSensePage));
 
+    private void OpenPerifericos_Click(object sender, RoutedEventArgs e) => App.Panel?.OpenPage(typeof(PerifericosPage));
+
     private void Rotate_Click(object sender, RoutedEventArgs e) => App.Tray?.RotateNow();
 
     private void ThemeTile_Click(object sender, RoutedEventArgs e) => Core.SetDark(ThemeTile.IsChecked == true);

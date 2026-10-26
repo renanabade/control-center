@@ -30,6 +30,13 @@ public static class DualSense
         public bool Automatico { get; set; }
     }
 
+    private static void SetGameColor((byte r, byte g, byte b)? cor)
+    {
+        if (_gameColor == cor) return;
+        _gameColor = cor;
+        OutputEvent.Set();
+    }
+
     /// <summary>O modo que vale agora: o do jogo aberto no automático, ou o escolhido.</summary>
     public static Modo Efetivo => Cfg.Automatico ? Jogos.Atual?.jogo.Modo ?? Modo.DualSense : Cfg.Modo;
 
@@ -272,7 +279,7 @@ public static class DualSense
                         else if (_gameColor != want)
                         {
                             Log.Write($"DS4 virtual pediu cor {cor} ({(Jogos.Atual is { } a ? a.jogo.Nome : "sem jogo, ignorada")})");
-                            _gameColor = want;
+                            SetGameColor(want);
                             OutputEvent.Set();
                         }
                         Rumble(e.LargeMotor, e.SmallMotor);
@@ -306,7 +313,7 @@ public static class DualSense
             try { _pad.Disconnect(); } catch { }
             _pad = null;
             _padModo = null;
-            _gameColor = null;
+            SetGameColor(null);
             Rumble(0, 0);
         }
     }
@@ -500,10 +507,14 @@ public static class DualSense
         common[42] = 0x00;                                 // brilho dos LEDs de jogador: máximo
         common[43] = (byte)(Cfg.LedsJogador ? 0x04 : 0x00);   // só o LED do meio, jogador 1
         var (r, g, b) = _gameColor ?? BaseColor();
+        var (br, bg, bb) = BaseColor();
         double k = Cfg.Intensidade / 100.0 * TransitionLevel();
         common[44] = (byte)Math.Round(r * k);
         common[45] = (byte)Math.Round(g * k);
         common[46] = (byte)Math.Round(b * k);
+        // mouse e teclado seguem a cor base do modo: sem intensidade, transição nem cor do jogo.
+        // Reescrever o teclado a cada quadro da transição faz ele piscar
+        Perifericos.FromController(br, bg, bb);
 
         if (!Bluetooth)
         {

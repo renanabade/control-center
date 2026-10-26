@@ -96,3 +96,14 @@ Reinicie o PC depois de instalar os dois.
 - **Jogo com controles duplicados:** instale o HidHide. Se o app foi encerrado à força, abra o *HidHide Configuration
   Client* e desmarque o DualSense.
 - **Luz não muda por Bluetooth:** desligue e ligue o controle (PS por 10 s) para ele reconectar.
+
+## Periféricos (mouse e teclado)
+
+Bloco **Periféricos** no painel. Funciona sem Synapse e sem o programa da Redragon (feche-os, senão eles brigam pela
+cor):
+
+- **Razer DeathAdder V2** (`1532:0084`): logo e roda, protocolo Chroma (relatório de recurso de 90 bytes).
+- **Redragon Kumara V2** (`320F:5000`, chip EVision): modo estático, relatório 0x04 na interface 1.
+
+Cada um pode **seguir a cor do controle** (inclui cor por modo, cor do jogo no PS4 e a transição) ou ter cor própria,
+com brilho de 0 a 100%. Config em `%APPDATA%\win-control\perifericos.json`. Protocolos tirados do OpenRGB.
