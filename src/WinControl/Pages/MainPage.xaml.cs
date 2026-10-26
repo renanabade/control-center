@@ -58,7 +58,7 @@ public sealed partial class MainPage : Page
     private void BuildScenes()
     {
         var cenas = Conforto.Cenas.OfType<JsonObject>().Take(4).ToList();
-        string sig = string.Join("|", cenas.Select(x => x["nome"]?.ToString()));
+        string sig = string.Join("|", cenas.Select(x => $"{x["nome"]}:{Conforto.Describe(x)}"));
         if (sig != _scenesSig)
         {
             _scenesSig = sig;
@@ -83,7 +83,8 @@ public sealed partial class MainPage : Page
                         },
                     },
                 };
-                ToolTipService.SetToolTip(btn, Conforto.Describe(cenas[i]));
+                ToolTipService.SetToolTip(btn, $"{Conforto.Describe(cenas[i])}\nBotão direito: editar");
+                btn.ContextFlyout = SceneMenu(nome, cenas[i]["tema"]?.ToString(), cenas[i]["luz_noturna"]?.GetValue<bool>());
                 btn.Click += (_, _) =>
                 {
                     Conforto.Cena = nome;
@@ -96,6 +97,27 @@ public sealed partial class MainPage : Page
             }
         }
         foreach (var (nome, btn) in _sceneButtons) btn.IsChecked = Conforto.Cena == nome;   // só uma marcada
+    }
+
+    /// <summary>Botão direito numa cena: escolher o tema dela ou gravar nela o estado atual.</summary>
+    private static MenuFlyout SceneMenu(string nome, string? tema, bool? nightLight)
+    {
+        var menu = new MenuFlyout();
+        foreach (var (label, value) in new[] { ("Tema escuro", "escuro"), ("Tema claro", "claro"), ("Não mudar o tema", (string?)null) })
+        {
+            var it = new RadioMenuFlyoutItem { Text = label, GroupName = "tema", IsChecked = tema == value };
+            it.Click += (_, _) => Conforto.SetSceneTheme(nome, value);
+            menu.Items.Add(it);
+        }
+        menu.Items.Add(new MenuFlyoutSeparator());
+        var nl = new ToggleMenuFlyoutItem { Text = "Ligar a Luz Noturna", IsChecked = nightLight == true };
+        nl.Click += (_, _) => Conforto.SetSceneNightLight(nome, nl.IsChecked);
+        menu.Items.Add(nl);
+        menu.Items.Add(new MenuFlyoutSeparator());
+        var save = new MenuFlyoutItem { Text = "Salvar estado atual nesta cena", Icon = new FontIcon { Glyph = "" } };
+        save.Click += (_, _) => Conforto.SaveSceneFromCurrent(nome);
+        menu.Items.Add(save);
+        return menu;
     }
 
     private void BuildSliders()

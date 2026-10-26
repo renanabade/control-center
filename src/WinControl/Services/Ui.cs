@@ -26,7 +26,8 @@ public static class Ui
     {
         var c = Lamp.Cur;
         if (c.Busy) return "Conectando…";
-        if (!c.Online) return "Sem conexão";
+        if (Lamp.ConfigProblem is { } p) return $"Não configurada ({p})";
+        if (!c.Online) return Lamp.HasBle ? "Dormindo (acorda pelo Bluetooth)" : "Sem conexão";
         if (!c.On) return "Desligada";
         string s = $"Ligada · {c.B}% · " + (c.Mode == "colour" ? "cor" : $"{Kelvin(c.T)}K");
         int left = Lamp.TimerLeft();

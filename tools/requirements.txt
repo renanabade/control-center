@@ -1,0 +1,3 @@
+tuya-device-sharing-sdk
+cryptography
+qrcode[pil]

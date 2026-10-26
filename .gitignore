@@ -2,3 +2,8 @@
 obj/
 *.user
 .vs/
+__pycache__/
+# config local com a chave da lâmpada, caso alguém copie para cá
+lamp_config.json
+session.json
+devices_keys.json
