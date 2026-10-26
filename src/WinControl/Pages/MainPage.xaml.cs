@@ -45,6 +45,12 @@ public sealed partial class MainPage : Page
             AgendaTile.IsChecked = Conforto.Flag("agenda_ativa");
             JoinTile.IsChecked = Conforto.Flag("telas_juntas");
             ProjectCaption.Text = DisplayProjection.Label(DisplayProjection.Current());
+            PadCaption.Text = !DualSense.Conectado ? "Controle" : DualSense.Efetivo switch
+            {
+                DualSense.Modo.Xbox360 => "Xbox 360",
+                DualSense.Modo.Ps4 => "PS4",
+                _ => "DualSense",
+            };
             LampLine.Text = $"Lâmpada · {Ui.LampStatus()}";
             AgendaLine.Text = Conforto.Flag("agenda_ativa") && Conforto.NextItem() is { } nxt
                 ? $"Agenda · {nxt["hora"]} → {Conforto.Describe(nxt)}"
@@ -184,6 +190,8 @@ public sealed partial class MainPage : Page
     private void OpenLamp_Click(object sender, RoutedEventArgs e) => App.Panel?.OpenPage(typeof(LampPage));
 
     private void OpenProject_Click(object sender, RoutedEventArgs e) => App.Panel?.OpenPage(typeof(ProjectPage));
+
+    private void OpenDualSense_Click(object sender, RoutedEventArgs e) => App.Panel?.OpenPage(typeof(DualSensePage));
 
     private void Rotate_Click(object sender, RoutedEventArgs e) => App.Tray?.RotateNow();
 

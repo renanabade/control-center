@@ -8,6 +8,7 @@ Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita e
 - **Tema claro/escuro** e **Luz Noturna**.
 - **Cenas** (Trabalho, Noite, Filme...) que ajustam tudo de uma vez, e uma **agenda** por horário.
 - **Projetar** (o mesmo do Win+P) e **girar um monitor** por atalho.
+- **DualSense** por USB ou Bluetooth: cor e intensidade da luz, e emulação de **Xbox 360** ou **PS4** (ViGEmBus).
 
 ## Começo rápido
 
@@ -54,6 +55,7 @@ Detalhes e formato dos arquivos: [docs/configuracao.md](docs/configuracao.md).
 
 - [docs/lampada.md](docs/lampada.md): configurar a lâmpada (chave, IP, Bluetooth).
 - [docs/configuracao.md](docs/configuracao.md): referência dos arquivos `lamp_config.json` e `conforto.json`.
+- [docs/dualsense.md](docs/dualsense.md): controle DualSense, luz, emulação e drivers.
 - [docs/problemas.md](docs/problemas.md): solução de problemas.
 - [docs/arquitetura.md](docs/arquitetura.md): como o código está organizado e como testar.
 

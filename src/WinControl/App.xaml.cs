@@ -59,12 +59,14 @@ public partial class App : Application
         if (page != null || argv.Contains("--show")) Panel.ShowNearTray();
         if (page == "lamp") Panel!.OpenPage(typeof(Pages.LampPage));
         else if (page == "project") Panel!.OpenPage(typeof(Pages.ProjectPage));
+        else if (page == "dualsense") Panel!.OpenPage(typeof(Pages.DualSensePage));
         else if (!argv.Contains("--background") && page == null) Panel.ShowNearTray();
     }
 
     public static void Quit()
     {
         Log.Write("control-center encerrado");
+        DualSense.Stop();
         Tray?.Dispose();
         Environment.Exit(0);
     }

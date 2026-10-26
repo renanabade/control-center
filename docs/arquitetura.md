@@ -19,6 +19,8 @@ src/WinControl/
     Conforto.cs        cenas, agenda, conforto.json
     Theme.cs           tema claro/escuro e Luz Noturna (registro + broadcast)
     Screens.cs         brilho dos monitores (DDC/CI e WMI)
+    DualSense.cs       DualSense por HID (USB 0x01/0x02, BT 0x31 com CRC32), luz, ViGEm (X360/DS4), HidHide
+    Jogos.cs           modo automático: vigia processos (WMI), categorias da Steam (57/58 = DualSense), jogos.json
     DisplayProjection.cs, Rotation.cs, Hotkeys.cs
 tools/
   pegar_chave.py       busca id + local_key pelo login QR do Smart Life
@@ -49,7 +51,7 @@ tools/
 |---|---|
 | `--background` | Inicia sem abrir o painel (é o que o "Iniciar com o Windows" usa). |
 | `--show` | Abre o painel ao iniciar. |
-| `--page=lamp` / `--page=project` | Abre direto numa subpágina (para desenvolvimento). |
+| `--page=lamp` / `--page=project` / `--page=dualsense` | Abre direto numa subpágina (para desenvolvimento). |
 | `--selftest` | Lê lâmpada, telas, tema, projeção e agenda e grava `selftest.txt` na pasta de config. |
 | `--selftest-write` | Também liga, muda e restaura a lâmpada. |
 | `--selftest-scenes` | Testa as regras de cena da lâmpada. |

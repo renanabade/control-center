@@ -173,6 +173,7 @@ public static class Core
         Log.Write($"control-center {typeof(Core).Assembly.GetName().Version} | config em {AppPaths.Dir} | exe {Environment.ProcessPath}");
         Lamp.Load();
         Conforto.Start();
+        DualSense.Start();
         Screens.Start();
         new Thread(SendWorker) { IsBackground = true, Name = "envio-lampada" }.Start();
         new Thread(NightWatcher) { IsBackground = true, Name = "luz-noturna" }.Start();
