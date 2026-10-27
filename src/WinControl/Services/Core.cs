@@ -111,8 +111,8 @@ public static class Core
     /// <summary>Luz Noturna mudou: tema automático e, ao ativar, lâmpada a 1% / mais quente.</summary>
     private static void NightWatcher()
     {
+        // ao iniciar não mexe no tema: só segue quando a Luz Noturna muda (senão todo boot de dia virava tema claro)
         bool prev = Theme.NightLightOn();
-        if (Conforto.Flag("tema_automatico")) Theme.SetDark(prev);
         while (true)
         {
             Thread.Sleep(3000);
