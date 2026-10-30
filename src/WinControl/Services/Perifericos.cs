@@ -90,7 +90,7 @@ public static class Perifericos
         catch (Exception e) { Log.Write($"não consegui salvar perifericos.json: {e.Message}"); }
     }
 
-    /// <summary>O DualSense chama isto com a cor que acabou de mandar para a barra (já com intensidade/transição).</summary>
+    /// <summary>O DualSense chama isto com a cor base do modo (sem intensidade, transição nem cor do jogo).</summary>
     public static void FromController(byte r, byte g, byte b)
     {
         if (_controle == (r, g, b)) return;

@@ -61,7 +61,7 @@ public sealed partial class PerifericosPage : Page
                 : lista.Length > 0 ? $"Com cor própria: {lista}" : "Nenhuma tecla com cor própria.";
             BrightnessText.Text = $"{Cur.Brilho}%";
             Hint.Text = Cur.SeguirControle
-                ? "Acompanha a barra do DualSense: cor por modo, cor do jogo no PS4 e a transição."
+                ? "Acompanha a cor do DualSense (a do modo, com cor por modo ligada)."
                 : "Cor própria: escolha na roda.";
         }
         finally { _updating = false; }

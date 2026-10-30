@@ -184,7 +184,9 @@ public static partial class Jogos
         lock (Gate) Db.Jogos.TryGetValue(key, out j);
         if (j == null) return;
         Log.Write($"jogos: {j.Nome} → {DualSense.Label(j.Modo)} ({OrigemLabel(j.Origem)})");
-        Ui.Run(() => App.Tray?.Balloon("Controle", $"{j.Nome} → {DualSense.Label(j.Modo)} ({OrigemLabel(j.Origem)})"));
+        // o aviso só faz sentido se o modo vai mudar mesmo: controle conectado e automático ligado
+        if (DualSense.Conectado && DualSense.Cfg.Automatico)
+            Ui.Run(() => App.Tray?.Balloon("Controle", $"{j.Nome} → {DualSense.Label(j.Modo)} ({OrigemLabel(j.Origem)})"));
         Bus.Notify();
     }
 

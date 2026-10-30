@@ -75,6 +75,7 @@ public static class DualSense
     public static void Start()
     {
         Load();
+        SyncPerifericos();
         Jogos.Start();
         new Thread(Reader) { IsBackground = true, Name = "dualsense" }.Start();
         new Thread(Writer) { IsBackground = true, Name = "dualsense-saida" }.Start();
@@ -138,6 +139,7 @@ public static class DualSense
     public static void Reapply()
     {
         Task.Run(ApplyModo);
+        SyncPerifericos();
         Bus.Notify();
     }
 
@@ -145,7 +147,15 @@ public static class DualSense
     {
         Save();
         OutputEvent.Set();   // o envio coalescido manda só o último valor
+        SyncPerifericos();
         Bus.Notify();
+    }
+
+    // o envio para a barra só roda com o controle conectado; sem isso, mouse e teclado ficavam no azul padrão
+    private static void SyncPerifericos()
+    {
+        var (r, g, b) = BaseColor();
+        Perifericos.FromController(r, g, b);
     }
 
     public static (byte r, byte g, byte b) BaseColor()

@@ -139,7 +139,8 @@ public sealed class Tray : IDisposable
         pad.DropDownItems.Add(Item("Automático por jogo", () => DualSense.SetAutomatico(!DualSense.Cfg.Automatico), check: DualSense.Cfg.Automatico));
         foreach (var m in Enum.GetValues<DualSense.Modo>())
             pad.DropDownItems.Add(Item($"Emular {DualSense.Label(m)}", () => DualSense.SetModo(m), check: DualSense.Efetivo == m));
-        pad.DropDownItems.Add(Item("LED de jogador", () => DualSense.SetPlayerLeds(!DualSense.Cfg.LedsJogador), check: DualSense.Cfg.LedsJogador));        pad.DropDownItems.Add(Item("Editar jogos conhecidos", () => Process.Start("notepad.exe", Jogos.FilePath)));
+        pad.DropDownItems.Add(Item("LED de jogador", () => DualSense.SetPlayerLeds(!DualSense.Cfg.LedsJogador), check: DualSense.Cfg.LedsJogador));
+        pad.DropDownItems.Add(Item("Editar jogos conhecidos", () => Process.Start("notepad.exe", Jogos.FilePath)));
         pad.DropDownItems.Add(new WF.ToolStripSeparator());
         foreach (var v in new[] { 0, 25, 50, 100 })
             pad.DropDownItems.Add(Item(v == 0 ? "Luz apagada" : $"Luz {v}%", () => DualSense.SetIntensity(v), check: DualSense.Cfg.Intensidade == v));

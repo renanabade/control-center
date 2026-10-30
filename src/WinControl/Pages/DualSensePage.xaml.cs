@@ -48,7 +48,8 @@ public sealed partial class DualSensePage : Page
             Status.Text = DualSense.Status();
             IntensityText.Text = $"{DualSense.Cfg.Intensidade}%";
             PlayerLeds.IsOn = DualSense.Cfg.LedsJogador;
-            PerMode.IsOn = DualSense.Cfg.CorPorModo;            ColorLabel.Text = DualSense.Cfg.CorPorModo ? $"Cor por modo · editando {DualSense.Label(DualSense.Efetivo)}" : "Cor por modo";
+            PerMode.IsOn = DualSense.Cfg.CorPorModo;
+            ColorLabel.Text = DualSense.Cfg.CorPorModo ? $"Cor por modo · editando {DualSense.Label(DualSense.Efetivo)}" : "Cor por modo";
             SyncWheel();
             var m = DualSense.Efetivo;
             var jogo = Jogos.Atual;
