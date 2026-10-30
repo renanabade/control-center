@@ -20,6 +20,9 @@ public sealed partial class PanelWindow : Window
     private bool _wasActive;
     private DateTime _shownAt;
     private readonly DispatcherTimer _focusWatch = new() { Interval = TimeSpan.FromMilliseconds(200) };
+    // escondido, o painel ainda segura a interface inteira (e o Direct3D na GPU): depois de um tempo fechado, é solto
+    private readonly DispatcherTimer _release = new() { Interval = TimeSpan.FromMinutes(3) };
+    private readonly Action _onBus;
 
     public PanelWindow()
     {
@@ -45,9 +48,29 @@ public sealed partial class PanelWindow : Window
         };
 
         _focusWatch.Tick += FocusWatch_Tick;
+        _release.Tick += Release_Tick;
         Nav.Navigate(typeof(MainPage));
-        Bus.Changed += () => Ui.Run(ApplyTheme);
+        _onBus = () => Ui.Run(ApplyTheme);
+        Bus.Changed += _onBus;
+        Closed += (_, _) => { Bus.Changed -= _onBus; _focusWatch.Stop(); _release.Stop(); };
         ApplyTheme();
+    }
+
+    private void Release_Tick(object? sender, object e)
+    {
+        _release.Stop();
+        if (IsShown) return;
+        if (Nav.Content != null)
+        {
+            // tira as páginas da árvore primeiro: o Unloaded delas desliga o Bus; fecha no próximo tique
+            Nav.BackStack.Clear();
+            Nav.Content = null;
+            _release.Interval = TimeSpan.FromSeconds(1);
+            _release.Start();
+            return;
+        }
+        Log.Write("painel solto da memória");
+        Close();
     }
 
     /// <summary>O painel acompanha o tema do Windows (claro/escuro), inclusive quando ele muda com o app aberto.</summary>
@@ -64,6 +87,7 @@ public sealed partial class PanelWindow : Window
     {
         ApplyTheme();
         while (Nav.CanGoBack) Nav.GoBack();
+        if (Nav.Content == null) Nav.Navigate(typeof(MainPage));   // reaberto no meio da soltura
         var area = DisplayArea.Primary.WorkArea;
         double scale = GetDpiScale();
         int w = (int)(WidthDip * scale), h = (int)(HeightDip * scale), m = (int)(MarginDip * scale);
@@ -73,6 +97,7 @@ public sealed partial class PanelWindow : Window
         Activate();
         ForceForeground();
         _shownAt = DateTime.UtcNow;
+        _release.Stop();
         _focusWatch.Start();
         Core.PanelOpen = true;
         Core.PokePoller();          // lê a lâmpada agora, em vez de esperar o próximo ciclo
@@ -99,6 +124,8 @@ public sealed partial class PanelWindow : Window
         Core.PanelOpen = false;
         _wasActive = false;
         AppWindow.Hide();
+        _release.Interval = TimeSpan.FromMinutes(3);
+        _release.Start();
     }
 
     public void OpenPage(Type page) =>

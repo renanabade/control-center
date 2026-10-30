@@ -1,5 +1,6 @@
 using System.Diagnostics;
-using System.Management;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
@@ -8,7 +9,7 @@ using Microsoft.Win32;
 namespace WinControl.Services;
 
 /// <summary>
-/// Modo automático do DualSense: percebe quando um jogo abre (WMI), descobre se ele suporta o DualSense pelas
+/// Modo automático do DualSense: percebe quando um jogo vem para a frente, descobre se ele suporta o DualSense pelas
 /// categorias da loja da Steam (57/58) e escolhe nativo ou PS4. Respostas e escolhas manuais ficam em jogos.json.
 /// </summary>
 public static partial class Jogos
@@ -109,36 +110,85 @@ public static partial class Jogos
 
     public static string OrigemLabel(string o) => o switch { "steam" => "pela Steam", "voce" => "escolha sua", _ => "padrão" };
 
-    // ---------------- vigia de processos ----------------
+    // ---------------- vigia de janelas ----------------
+    // todo jogo vem para o primeiro plano: o Windows avisa quando a janela da frente muda, sem varrer processos.
+    // (o WMI "WITHIN 1" fazia o WmiPrvSE listar todos os processos duas vezes por segundo, o dia inteiro)
+    private const uint EventSystemForeground = 0x0003, WineventOutOfContext = 0x0000;
+    private const uint ProcessQueryLimited = 0x1000, Synchronize = 0x00100000;
+
+    private delegate void WinEventProc(IntPtr hook, uint ev, IntPtr hwnd, int obj, int child, uint thread, uint time);
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct Msg { public IntPtr hwnd; public uint message; public UIntPtr wParam; public IntPtr lParam; public uint time; public int x, y; }
+
+    [DllImport("user32.dll")] private static extern IntPtr SetWinEventHook(uint min, uint max, IntPtr mod, WinEventProc cb, uint pid, uint thread, uint flags);
+    [DllImport("user32.dll")] private static extern int GetMessageW(out Msg m, IntPtr h, uint min, uint max);
+    [DllImport("user32.dll")] private static extern IntPtr GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(IntPtr hwnd, out uint pid);
+    [DllImport("kernel32.dll", SetLastError = true)] private static extern IntPtr OpenProcess(uint access, bool inherit, uint pid);
+    [DllImport("kernel32.dll")] private static extern bool CloseHandle(IntPtr h);
+    [DllImport("kernel32.dll", CharSet = CharSet.Unicode)] private static extern bool QueryFullProcessImageNameW(IntPtr h, int flags, StringBuilder name, ref int size);
+    [DllImport("kernel32.dll")] private static extern bool GetProcessTimes(IntPtr h, out long created, out long exited, out long kernel, out long user);
+
+    private static WinEventProc? _proc;   // referência fixa: o coletor de lixo não pode soltar o delegate
+    // processos já analisados (pid + hora de criação, porque o pid é reaproveitado): cada um é analisado uma vez só
+    private static readonly HashSet<(uint pid, long created)> Vistos = new();
+
     private static void Watch()
     {
-        while (true)
+        _proc = (_, _, hwnd, _, _, _, _) => OnForeground(hwnd);
+        if (SetWinEventHook(EventSystemForeground, EventSystemForeground, IntPtr.Zero, _proc, 0, 0, WineventOutOfContext) == IntPtr.Zero)
         {
-            try
-            {
-                // sem admin, o WMI verifica a cada 1 s por dentro; o rastreio do kernel exigiria rodar como administrador
-                using var start = new ManagementEventWatcher(new WqlEventQuery(
-                    "SELECT * FROM __InstanceCreationEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'"));
-                using var stop = new ManagementEventWatcher(new WqlEventQuery(
-                    "SELECT * FROM __InstanceDeletionEvent WITHIN 1 WHERE TargetInstance ISA 'Win32_Process'"));
-                start.EventArrived += (_, e) =>
-                {
-                    var p = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-                    int pid = Convert.ToInt32(p["ProcessId"]);
-                    if (p["ExecutablePath"] is string path) Task.Run(() => OnStart(pid, path));
-                };
-                stop.EventArrived += (_, e) =>
-                {
-                    var p = (ManagementBaseObject)e.NewEvent["TargetInstance"];
-                    OnStop(Convert.ToInt32(p["ProcessId"]));
-                };
-                start.Start();
-                stop.Start();
-                Log.Write("jogos: vigiando processos");
-                Thread.Sleep(Timeout.Infinite);
-            }
-            catch (Exception e) { Log.Write($"jogos: vigia caiu, tentando de novo: {e.Message}"); Thread.Sleep(10000); }
+            Log.Write("jogos: não consegui vigiar a janela em primeiro plano; modo automático parado");
+            return;
         }
+        Log.Write("jogos: vigiando a janela em primeiro plano");
+        OnForeground(GetForegroundWindow());   // jogo que já estava aberto quando o app subiu
+        while (GetMessageW(out _, IntPtr.Zero, 0, 0) > 0) { }
+    }
+
+    private static void OnForeground(IntPtr hwnd)
+    {
+        if (hwnd == IntPtr.Zero) return;
+        GetWindowThreadProcessId(hwnd, out uint pid);
+        if (pid == 0 || pid == Environment.ProcessId) return;
+        var h = OpenProcess(ProcessQueryLimited, false, pid);
+        if (h == IntPtr.Zero) return;
+        string? exe = null;
+        try
+        {
+            GetProcessTimes(h, out long created, out _, out _, out _);
+            lock (Gate)
+            {
+                if (!Vistos.Add((pid, created))) return;
+                if (Vistos.Count > 2000) Vistos.Clear();   // só para não crescer sem fim; no pior caso analisa de novo
+            }
+            var sb = new StringBuilder(1024);
+            int size = sb.Capacity;
+            if (QueryFullProcessImageNameW(h, 0, sb, ref size)) exe = sb.ToString();
+        }
+        finally { CloseHandle(h); }
+        if (exe != null) Task.Run(() => OnStart((int)pid, exe));
+    }
+
+    /// <summary>Avisa quando o processo fechar, sem consultar nada enquanto ele roda.</summary>
+    private static void WatchExit(int pid)
+    {
+        var h = OpenProcess(Synchronize, false, (uint)pid);
+        if (h == IntPtr.Zero) { OnStop(pid); return; }   // já fechou (ou não deixa nem esperar: não fica preso no modo)
+        var wait = new ProcessWait(h);
+        RegisteredWaitHandle? reg = null;
+        reg = ThreadPool.RegisterWaitForSingleObject(wait, (_, _) =>
+        {
+            reg?.Unregister(null);
+            wait.Dispose();
+            OnStop(pid);
+        }, null, Timeout.Infinite, executeOnlyOnce: true);
+    }
+
+    private sealed class ProcessWait : WaitHandle
+    {
+        public ProcessWait(IntPtr h) => SafeWaitHandle = new Microsoft.Win32.SafeHandles.SafeWaitHandle(h, ownsHandle: true);
     }
 
     private static void OnStart(int pid, string exe)
@@ -157,11 +207,14 @@ public static partial class Jogos
                 nome = GameName(exe);
                 Log.Write($"jogos: {nome} reconhecido por carregar biblioteca de controle");
             }
+            bool segundo;   // segundo .exe do mesmo jogo
             lock (Gate)
             {
-                if (Rodando.Any(r => r.key == key)) { Rodando.Add((pid, key)); return; }   // segundo .exe do mesmo jogo
+                segundo = Rodando.Any(r => r.key == key);
                 Rodando.Add((pid, key));
             }
+            WatchExit(pid);
+            if (segundo) return;
             bool known;
             lock (Gate) known = Db.Jogos.ContainsKey(key);
             if (!known) Classify(key, nome!, appid, notify: true);

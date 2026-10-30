@@ -60,6 +60,9 @@ public static class DualSense
     private static readonly int[] Pids = { 0x0CE6, 0x0DF2 };
 
     private static readonly AutoResetEvent OutputEvent = new(false);
+    private static readonly AutoResetEvent PadEvent = new(false);       // controle virtual criado: volta a ler tudo
+    private static readonly AutoResetEvent DevicesEvent = new(false);   // algum HID entrou ou saiu
+    private static ulong _lastInput = ulong.MaxValue;                   // último estado enviado ao controle virtual
     private static HidStream? _stream;
     private static string? _devicePath;
     private static byte _btSeq;
@@ -194,10 +197,12 @@ public static class DualSense
 
     private static void Reader()
     {
+        // procurar o controle varre todos os HID: só de novo quando algum aparelho entra ou sai
+        DeviceList.Local.Changed += (_, _) => DevicesEvent.Set();
         while (true)
         {
             var dev = Find();
-            if (dev == null || !dev.TryOpen(out var stream)) { Thread.Sleep(2000); continue; }
+            if (dev == null || !dev.TryOpen(out var stream)) { DevicesEvent.WaitOne(60_000); continue; }
             try
             {
                 Bluetooth = dev.GetMaxInputReportLength() > 64;
@@ -224,6 +229,9 @@ public static class DualSense
                     var span = new ReadOnlySpan<byte>(buf, o, n - o);
                     UpdateBattery(span);
                     Forward(span, Shortcut(span));
+                    // o controle manda 250-1000 relatórios/s. Sem controle virtual só interessam o atalho e a bateria:
+                    // 20 leituras/s bastam (um aperto do atalho dura bem mais que 50 ms). O controle virtual acorda na hora
+                    if (_pad == null) PadEvent.WaitOne(50);
                 }
             }
             catch (Exception e) { Log.Write($"DualSense desconectado: {e.Message}"); }
@@ -298,6 +306,8 @@ public static class DualSense
                     _pad = p;
                 }
                 _padModo = want;
+                _lastInput = ulong.MaxValue;   // controle novo começa zerado: o primeiro relatório vai sempre
+                PadEvent.Set();
                 HidHide(true);
                 Log.Write($"emulando {Label(want)}");
             }
@@ -376,6 +386,11 @@ public static class DualSense
         byte lx = d[0], ly = d[1], rx = d[2], ry = d[3], l2 = d[4], r2 = d[5];
         byte b0 = d[7], b1 = d[8], b2 = d[9];
         int dpad = muteHeld ? 8 : b0 & 0x0F;
+        // o giroscópio muda todo relatório; sticks, gatilhos e botões, quase nunca: só envia quando eles mudam
+        ulong input = lx | (ulong)ly << 8 | (ulong)rx << 16 | (ulong)ry << 24 | (ulong)l2 << 32 | (ulong)r2 << 40
+                      | (ulong)(b0 & 0xF0 | dpad) << 48 | (ulong)(b1 & 0xF3 | (b2 & 0x03) << 2) << 56;
+        if (input == _lastInput) return;
+        _lastInput = input;
         bool sq = (b0 & 0x10) != 0, cross = (b0 & 0x20) != 0, circle = (b0 & 0x40) != 0, tri = (b0 & 0x80) != 0;
         bool l1 = (b1 & 0x01) != 0, r1 = (b1 & 0x02) != 0, create = (b1 & 0x10) != 0, options = (b1 & 0x20) != 0;
         bool l3 = (b1 & 0x40) != 0, r3 = (b1 & 0x80) != 0, ps = (b2 & 0x01) != 0, touch = (b2 & 0x02) != 0;

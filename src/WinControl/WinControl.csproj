@@ -15,6 +15,8 @@
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <!-- app de bandeja com pouca alocação: o GC em segundo plano só gastaria uma thread e memória a mais -->
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
   </PropertyGroup>
 
   <ItemGroup>

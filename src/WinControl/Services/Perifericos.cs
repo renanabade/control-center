@@ -82,6 +82,18 @@ public static class Perifericos
         try { if (File.Exists(ConfigFile)) Cfg = JsonSerializer.Deserialize<Config>(File.ReadAllText(ConfigFile), Json) ?? new(); }
         catch (Exception e) { Log.Write($"perifericos.json inválido, usando o padrão: {e.Message}"); }
         new Thread(Worker) { IsBackground = true, Name = "perifericos" }.Start();
+        // aparelho plugado depois, ou PC voltando da suspensão (a luz volta ao padrão): reenvia a cor
+        DeviceList.Local.Changed += (_, _) => Resend();
+        Microsoft.Win32.SystemEvents.PowerModeChanged += (_, e) =>
+        {
+            if (e.Mode == Microsoft.Win32.PowerModes.Resume) Resend();
+        };
+    }
+
+    private static void Resend()
+    {
+        _sentMouse = null; _sentTeclado = null;
+        Wake.Set();
     }
 
     private static void Save()
@@ -140,8 +152,8 @@ public static class Perifericos
         Wake.Set();
         while (true)
         {
-            // a cada 30 s tenta de novo: aparelho plugado depois, ou que voltou de suspensão sem a cor
-            if (!Wake.WaitOne(30000)) { _sentMouse = null; _sentTeclado = null; }
+            // plugar e voltar da suspensão já acordam; os 10 min cobrem o que o Windows não avisar
+            if (!Wake.WaitOne(10 * 60_000)) { _sentMouse = null; _sentTeclado = null; }
             Thread.Sleep(150);   // a transição do controle manda 30 quadros/s; aqui basta o último
             try
             {

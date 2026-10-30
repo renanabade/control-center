@@ -14,6 +14,33 @@ public static class Theme
 
     private static readonly object Gate = new();
 
+    [DllImport("advapi32.dll")]
+    private static extern int RegNotifyChangeKeyValue(Microsoft.Win32.SafeHandles.SafeRegistryHandle key, bool subtree,
+                                                      uint filter, Microsoft.Win32.SafeHandles.SafeWaitHandle ev, bool async);
+
+    /// <summary>Aviso de que a Luz Noturna foi regravada. Armado antes de ler o estado, nenhuma mudança escapa no meio.</summary>
+    public sealed class NightLightWatch : IDisposable
+    {
+        private readonly RegistryKey _key;
+        private readonly AutoResetEvent _ev = new(false);
+
+        private NightLightWatch(RegistryKey key) => _key = key;
+
+        public static NightLightWatch? Arm()
+        {
+            var k = Registry.CurrentUser.OpenSubKey(NightLightKey);
+            if (k == null) return null;
+            var w = new NightLightWatch(k);
+            if (RegNotifyChangeKeyValue(k.Handle, false, 0x4 /* REG_NOTIFY_CHANGE_LAST_SET */, w._ev.SafeWaitHandle, true) == 0) return w;
+            w.Dispose();
+            return null;
+        }
+
+        public void Wait(int timeoutMs) => _ev.WaitOne(timeoutMs);
+
+        public void Dispose() { _key.Dispose(); _ev.Dispose(); }
+    }
+
     public static bool NightLightOn()
     {
         try

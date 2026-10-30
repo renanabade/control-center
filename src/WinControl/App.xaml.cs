@@ -15,6 +15,8 @@ public partial class App : Application
     public App()
     {
         InitializeComponent();
+        // o painel é fechado de verdade quando fica um tempo sem uso: o app vive na bandeja, sem janela
+        DispatcherShutdownMode = DispatcherShutdownMode.OnExplicitShutdown;
         // qualquer erro de interface vai para o log em vez de derrubar o app calado
         UnhandledException += (_, e) =>
         {
@@ -42,26 +44,37 @@ public partial class App : Application
 
         Ui.Queue = DispatcherQueue.GetForCurrentThread();
         Core.Start();
-        Panel = new PanelWindow();
-        Tray = new Tray(() => Panel.TogglePanel(), Quit);
+        Tray = new Tray(() => OpenPanel().TogglePanel(), Quit);
 
         new Thread(() =>
         {
             while (true)
             {
                 _showSignal.WaitOne();
-                Ui.Run(() => Panel?.ShowNearTray());
+                Ui.Run(() => OpenPanel().ShowNearTray());
             }
         }) { IsBackground = true }.Start();
 
         // para desenvolvimento: abre direto numa subpágina (--page=lamp | --page=project)
         var page = argv.FirstOrDefault(a => a.StartsWith("--page="))?[7..];
-        if (page != null || argv.Contains("--show")) Panel.ShowNearTray();
+        if (page != null || argv.Contains("--show")) OpenPanel().ShowNearTray();
         if (page == "lamp") Panel!.OpenPage(typeof(Pages.LampPage));
         else if (page == "project") Panel!.OpenPage(typeof(Pages.ProjectPage));
         else if (page == "dualsense") Panel!.OpenPage(typeof(Pages.DualSensePage));
         else if (page == "perifericos") Panel!.OpenPage(typeof(Pages.PerifericosPage));
-        else if (!argv.Contains("--background") && page == null) Panel.ShowNearTray();
+        else if (!argv.Contains("--background") && page == null) OpenPanel().ShowNearTray();
+    }
+
+    /// <summary>O painel só existe enquanto é usado: criado ao abrir, solto alguns minutos depois de fechado.</summary>
+    public static PanelWindow OpenPanel()
+    {
+        if (Panel == null)
+        {
+            var p = new PanelWindow();
+            p.Closed += (_, _) => { if (Panel == p) Panel = null; };
+            Panel = p;
+        }
+        return Panel;
     }
 
     public static void Quit()

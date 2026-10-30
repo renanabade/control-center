@@ -115,7 +115,8 @@ public static class Core
         bool prev = Theme.NightLightOn();
         while (true)
         {
-            Thread.Sleep(3000);
+            // o Windows avisa quando a chave é regravada; sem ela, volta a olhar a cada 3 s
+            using var watch = Theme.NightLightWatch.Arm();
             try
             {
                 bool now = Theme.NightLightOn();
@@ -134,6 +135,8 @@ public static class Core
                 prev = now;
             }
             catch (Exception e) { Log.Write($"erro no vigia da Luz Noturna: {e.Message}"); }
+            if (watch == null) Thread.Sleep(3000);
+            else watch.Wait(5 * 60_000);   // o limite é só rede de segurança
         }
     }
 
