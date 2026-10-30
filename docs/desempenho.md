@@ -1,6 +1,9 @@
-# Desempenho: deixar o WinControl leve (branch `perf/leveza`)
+# Desempenho
 
-## Problema (medido em 30/10/2026, app aberto havia 3h30)
+O app fica o dia todo na bandeja, então parado ele não pode gastar quase nada. Esta página registra o que foi
+feito para isso, as medições e o que ainda falta.
+
+## Antes (medido em 30/10/2026, app aberto havia 3h30)
 - 3–5% de um núcleo **o tempo todo**, 150 MB de memória privada, 105 threads.
 - 545 dos 590 s de CPU vinham de uma thread só: a leitura do DualSense (`DualSense.Reader`). O controle por
   Bluetooth manda cerca de 250 relatórios/s e todos eram processados, mesmo sem controle virtual.
@@ -29,12 +32,11 @@ instante em que o processo abre. Um jogo que já estava aberto antes do app tamb
   3h30 aberto e o "agora" com o app recém-aberto.
 - Painel: abre, fecha com Esc e, 3 min depois, a janela é destruída sem o app sair.
 
-## O que ainda está pendente
+## Pendente
 - **Soltar o painel não devolveu memória**: depois do fechamento a memória privada seguiu em cerca de 97 MB. O
   `Microsoft.UI.Xaml.dll` continua carregado e o framework XAML segura os recursos dele. O ganho real está na CPU (as
   páginas escondidas não se atualizam mais). Para cair abaixo disso, seria preciso tirar a interface do processo da
   bandeja (por exemplo, painel num processo separado), o que é uma mudança maior.
 - Não testado ainda: emulação Xbox/PS4 jogando, troca de modo pelo atalho Mute+direcional, detecção automática de
   jogo, reenvio da cor depois da suspensão.
-- O log real (`%APPDATA%\win-control\win-control.log`) não pôde ser lido do shell do agente (redirecionamento do
-  Claude Desktop): vale abrir pelo menu do app e procurar `ERRO`.
+- Conferir o log (bandeja → **Abrir log**) depois de um dia de uso e procurar `ERRO`.

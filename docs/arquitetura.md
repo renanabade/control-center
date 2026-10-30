@@ -6,9 +6,9 @@ App WinUI 3 sem pacote (`WindowsPackageType=None`, self-contained), com uma inst
 ```
 src/WinControl/
   App.xaml.cs          início, instância única, argumentos de linha de comando
-  PanelWindow.xaml.cs  painel flutuante: posição, foco, fechar ao clicar fora
+  PanelWindow.xaml.cs  painel flutuante: posição, foco, fechar ao clicar fora, soltar depois de 3 min escondido
   Tray.cs              ícone e menu da bandeja (WinForms NotifyIcon)
-  Pages/               MainPage (blocos, cenas, brilho), LampPage, ProjectPage
+  Pages/               MainPage (blocos, cenas, brilho), LampPage, ProjectPage, DualSensePage, PerifericosPage
   SelfTest.cs          teste sem interface contra o hardware real
   Services/
     Common.cs          AppPaths (%APPDATA%\win-control), Log, Bus (aviso de "algo mudou")
@@ -17,10 +17,10 @@ src/WinControl/
     Tuya.cs            protocolo local Tuya 3.3 (TCP 6668, AES-ECB) e descoberta UDP (6666/6667)
     Ble.cs             protocolo Tuya BLE (GATT 2b10/2b11, AES-CBC, chave de sessão) para acordar a lâmpada
     Conforto.cs        cenas, agenda, conforto.json
-    Theme.cs           tema claro/escuro e Luz Noturna (registro + broadcast)
+    Theme.cs           tema claro/escuro e Luz Noturna (registro + broadcast, aviso de mudança na chave)
     Screens.cs         brilho dos monitores (DDC/CI e WMI)
     DualSense.cs       DualSense por HID (USB 0x01/0x02, BT 0x31 com CRC32), luz, ViGEm (X360/DS4), HidHide
-    Jogos.cs           modo automático: vigia processos (WMI), categorias da Steam (57/58 = DualSense), jogos.json
+    Jogos.cs           modo automático: vigia a janela em primeiro plano (SetWinEventHook), categorias da Steam (57/58 = DualSense), jogos.json
     Perifericos.cs     luz do mouse Razer (Chroma) e do teclado Redragon (EVision), seguindo ou não o DualSense
     DisplayProjection.cs, Rotation.cs, Hotkeys.cs
 tools/
@@ -33,6 +33,9 @@ tools/
 - O **poller** lê a lâmpada a cada 3 s com o painel aberto e a cada 30 s com ele fechado.
 - Os sliders não falam direto com a lâmpada. Eles marcam o pedido e o **envio coalescido** (`Core.SendWorker`)
   manda só o último valor.
+- O painel só existe enquanto é usado: `App.OpenPanel` cria a janela e ela é fechada 3 min depois de escondida.
+- O resto reage a eventos do Windows em vez de consultar em laço: Luz Noturna (`RegNotifyChangeKeyValue`), jogo em
+  primeiro plano (`SetWinEventHook`), aparelhos HID entrando ou saindo. Detalhes e medições: [desempenho.md](desempenho.md).
 - Tudo que fala com a rede ou com o registro roda fora da thread de interface. `Ui.Run` volta para ela.
 
 ## DPs da lâmpada
@@ -52,7 +55,7 @@ tools/
 |---|---|
 | `--background` | Inicia sem abrir o painel (é o que o "Iniciar com o Windows" usa). |
 | `--show` | Abre o painel ao iniciar. |
-| `--page=lamp` / `--page=project` / `--page=dualsense` | Abre direto numa subpágina (para desenvolvimento). |
+| `--page=lamp` / `--page=project` / `--page=dualsense` / `--page=perifericos` | Abre direto numa subpágina (para desenvolvimento). |
 | `--selftest` | Lê lâmpada, telas, tema, projeção e agenda e grava `selftest.txt` na pasta de config. |
 | `--selftest-write` | Também liga, muda e restaura a lâmpada. |
 | `--selftest-scenes` | Testa as regras de cena da lâmpada. |

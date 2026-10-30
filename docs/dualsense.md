@@ -31,7 +31,7 @@ ligado e um jogo aberto, a troca fica gravada para aquele jogo. O LED do Mute fi
 Com **Automático por jogo** ligado, o control-center escolhe o modo sozinho quando um jogo abre e volta ao nativo
 quando ele fecha:
 
-1. **Percebe o jogo** (WMI, até ~1 s depois de abrir). Conta como jogo um `.exe` dentro de `steamapps\common`
+1. **Percebe o jogo** quando a janela dele vem para a frente (um jogo já aberto antes do app também conta). Conta como jogo um `.exe` dentro de `steamapps\common`
    (qualquer disco), das pastas da Epic/Ubisoft/GOG/EA, das suas `pastas_extras`, da lista de jogos do Windows
    (Game Bar), ou que carregue uma biblioteca de controle (XInput/DirectInput/GameInput).
 2. **Consulta a loja da Steam** uma vez: jogo com a categoria *DualSense Controller Support* → **nativo**; sem ela →

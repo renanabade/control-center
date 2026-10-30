@@ -8,7 +8,11 @@ Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita e
 - **Tema claro/escuro** e **Luz Noturna**.
 - **Cenas** (Trabalho, Noite, Filme...) que ajustam tudo de uma vez, e uma **agenda** por horário.
 - **Projetar** (o mesmo do Win+P) e **girar um monitor** por atalho.
-- **DualSense** por USB ou Bluetooth: cor e intensidade da luz, e emulação de **Xbox 360** ou **PS4** (ViGEmBus).
+- **DualSense** por USB ou Bluetooth: cor e intensidade da luz, emulação de **Xbox 360** ou **PS4** (ViGEmBus) e
+  troca automática do modo conforme o jogo.
+- **Periféricos**: luz do mouse Razer e do teclado Redragon, sem os programas dos fabricantes.
+
+Leve parado: cerca de 0,2% de um núcleo e 95 MB, porque reage a eventos do Windows em vez de ficar consultando.
 
 ## Começo rápido
 
@@ -55,9 +59,10 @@ Detalhes e formato dos arquivos: [docs/configuracao.md](docs/configuracao.md).
 
 - [docs/lampada.md](docs/lampada.md): configurar a lâmpada (chave, IP, Bluetooth).
 - [docs/configuracao.md](docs/configuracao.md): referência dos arquivos `lamp_config.json` e `conforto.json`.
-- [docs/dualsense.md](docs/dualsense.md): controle DualSense, luz, emulação e drivers.
+- [docs/dualsense.md](docs/dualsense.md): controle DualSense, luz, emulação, modo automático, drivers e periféricos.
 - [docs/problemas.md](docs/problemas.md): solução de problemas.
 - [docs/arquitetura.md](docs/arquitetura.md): como o código está organizado e como testar.
+- [docs/desempenho.md](docs/desempenho.md): o que deixa o app leve, medições e pendências.
 
 ## Onde ficam os dados
 
@@ -67,6 +72,7 @@ Tudo fica em `%APPDATA%\win-control`, **fora do repositório**, porque ali está
 |---|---|
 | `lamp_config.json` | id, IP, chave e MAC Bluetooth da lâmpada |
 | `conforto.json` | cenas, agenda e opções |
+| `dualsense.json`, `jogos.json`, `perifericos.json` | controle, modo por jogo e periféricos |
 | `win-control.log` | log. A primeira linha de cada início diz **qual pasta de config está em uso**. |
 
 O menu da bandeja tem **Abrir pasta de configuração** e **Abrir log**.
