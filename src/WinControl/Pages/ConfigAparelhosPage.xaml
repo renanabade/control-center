@@ -1,0 +1,74 @@
+<Page
+    x:Class="WinControl.Pages.ConfigAparelhosPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+
+    <ScrollViewer>
+        <StackPanel Padding="28,24" Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
+            <TextBlock Text="Aparelhos" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <InfoBar x:Name="Aviso" IsClosable="True" />
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Girar monitor" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Alterna o monitor escolhido entre paisagem e retrato." />
+                    <ComboBox x:Name="Monitores" Header="Monitor" MinWidth="320" SelectionChanged="Monitores_SelectionChanged" />
+                    <ComboBox x:Name="Sentido" Header="Sentido do retrato" MinWidth="320" SelectionChanged="Sentido_SelectionChanged">
+                        <ComboBoxItem Content="Girado para a direita (90°)" Tag="90" />
+                        <ComboBoxItem Content="Girado para a esquerda (270°)" Tag="270" />
+                    </ComboBox>
+                    <Button Content="Girar agora" Click="GirarAgora_Click" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Atalhos de teclado" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Clique no campo e aperte a combinação, com pelo menos Ctrl, Alt, Shift ou Win. Esc cancela." />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="AtalhoGirar" Header="Girar monitor" IsReadOnly="True" Tag="atalho_girar" PlaceholderText="Desligado" />
+                        <Button Grid.Column="1" Content="Desligar" VerticalAlignment="Bottom" Tag="atalho_girar" Click="DesligarAtalho_Click" />
+                    </Grid>
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <TextBox x:Name="AtalhoTema" Header="Alternar o tema" IsReadOnly="True" Tag="atalho_tema" PlaceholderText="Desligado" />
+                        <Button Grid.Column="1" Content="Desligar" VerticalAlignment="Bottom" Tag="atalho_tema" Click="DesligarAtalho_Click" />
+                    </Grid>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Periféricos" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock x:Name="PerifericosLinha" TextWrapping="Wrap" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Já reconhecidos: Razer DeathAdder V2 e Redragon Kumara V2 e Pro. Outro modelo de mesmo protocolo não apareceu? Adicione o identificador dele, separando por vírgula. Os demais aparelhos ficam com a Iluminação Dinâmica do Windows." />
+                    <TextBox x:Name="MousesBox" Header="Outros mouses Razer" PlaceholderText="1532:0084:3F (fabricante:produto:transaction id, em hexa)" />
+                    <TextBox x:Name="TecladosBox" Header="Outros teclados com chip EVision" PlaceholderText="320F:5000 (fabricante:produto, em hexa)" />
+                    <Button Content="Salvar periféricos" Click="SalvarPerifericos_Click" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Jogos (DualSense)" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="A Steam e as pastas padrão das outras lojas já são encontradas sozinhas. Instalou jogos em outro lugar? Coloque uma pasta por linha." />
+                    <TextBox x:Name="PastasBox" Header="Outras pastas de jogos" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="72" PlaceholderText="D:\Jogos" />
+                    <ComboBox x:Name="ModoPadrao" Header="Modo do jogo sem resposta da Steam" MinWidth="320" />
+                    <Button Content="Salvar jogos" Click="SalvarJogos_Click" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

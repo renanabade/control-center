@@ -63,16 +63,14 @@
                 </StackPanel>
 
                 <StackPanel Grid.Column="2" Spacing="6">
-                    <Button Style="{StaticResource TileButtonStyle}" Click="Rotate_Click"
-                            ToolTipService.ToolTip="Girar o monitor (Ctrl+Alt+R)">
+                    <Button x:Name="GirarTile" Style="{StaticResource TileButtonStyle}" Click="Rotate_Click">
                         <FontIcon Glyph="&#xE7AD;" FontSize="16" />
                     </Button>
                     <TextBlock Text="Girar monitor" Style="{StaticResource TileCaptionStyle}" />
                 </StackPanel>
 
                 <StackPanel Grid.Row="1" Spacing="6">
-                    <ToggleButton x:Name="ThemeTile" Style="{StaticResource TileToggleStyle}" Click="ThemeTile_Click"
-                                  ToolTipService.ToolTip="Tema escuro (Win+Ctrl+Shift+D)">
+                    <ToggleButton x:Name="ThemeTile" Style="{StaticResource TileToggleStyle}" Click="ThemeTile_Click">
                         <FontIcon Glyph="&#xE708;" FontSize="16" />
                     </ToggleButton>
                     <TextBlock Text="Tema escuro" Style="{StaticResource TileCaptionStyle}" />

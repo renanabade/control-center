@@ -31,8 +31,8 @@ Veja [lampada.md](lampada.md). O formato antigo, de uma lâmpada só, é convert
 
 ## `conforto.json`
 
-Cenas, agenda e opções. Você pode editar pelo painel (botão direito numa cena) ou à mão (bandeja → **Editar cenas e
-agenda**). O app percebe quando o arquivo muda e recarrega sozinho.
+Cenas, agenda e opções. Tudo isto se ajusta em **Configurações**, nas abas **Cenas e agenda** e **Aparelhos**. Se preferir
+editar à mão, use bandeja → **Editar cenas e agenda**: o app percebe quando o arquivo muda e recarrega sozinho.
 
 ```json
 {
@@ -60,7 +60,11 @@ agenda**). O app percebe quando o arquivo muda e recarrega sozinho.
 |---|---|
 | `tema_automatico` | O tema acompanha a Luz Noturna: escuro quando ela liga, claro quando desliga. Se a mudança da Luz Noturna veio de uma cena, vale o tema da cena. |
 | `telas_juntas` | Mexer no brilho de uma tela mexe em todas. |
-| `agenda_ativa` | Liga ou desliga a agenda. |
+| `agenda_ativa` | Liga ou desliga a agenda. Em instalação nova, vem desligada e vazia. |
+| `monitor_girar`, `girar_sentido` | Qual monitor gira (ID do EDID) e para que lado (`90` ou `270`). Vazio com uma tela só: gira ela. |
+| `atalho_girar`, `atalho_tema` | Atalhos, como `Ctrl+Alt+R`. Vazio: desligado. |
+| `predefinicoes` | Os botões da lâmpada: `nome`, `brilho`, `temperatura`. |
+| `luz_noturna_lampada`, `luz_noturna_brilho`, `luz_noturna_temperatura` | Se as lâmpadas acesas se ajustam quando a Luz Noturna liga, e para quanto. |
 | `api_ativa` | O app abre o pipe da [API](api.md). Sem esta chave, vale se o serviço está instalado. |
 | `api_usuario` | Usuário da API, para a tela de configurações sugerir ao trocar a senha. |
 
@@ -71,7 +75,7 @@ Todas são opcionais. O que não aparece não é alterado.
 | Chave | Valores | Observação |
 |---|---|---|
 | `lampada` | `{"ligada": true, "brilho": 1-100, "temperatura": 0-100}` ou `{"ligada": false}` | Vale para todas as lâmpadas da rede em que o PC está. Temperatura: 0 é a mais quente (2700K), 100 a mais fria (6500K). Nunca acende uma lâmpada apagada: guarda o ajuste para o próximo "ligar" de cada uma. `ligada: false` apaga só quando você escolhe a cena, nunca pela agenda. |
-| `telas` | `40` (todas) ou `{"LG ULTRAGEAR": 40, "Notebook": 20}` | O nome é o que aparece no painel. |
+| `telas` | `40` (todas) ou `{"Monitor externo": 40, "Notebook": 20}` | O nome é o que aparece no painel. |
 | `tema` | `"escuro"` ou `"claro"` | |
 | `luz_noturna` | `true` ou `false` | Liga ou desliga a Luz Noturna do Windows. |
 | `cena` | nome de uma cena | Só na agenda: aplica a cena inteira. |

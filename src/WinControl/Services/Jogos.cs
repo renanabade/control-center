@@ -76,6 +76,13 @@ public static partial class Jogos
         }
     }
 
+    /// <summary>Pela tela de configurações: onde mais procurar jogos, e o modo de quem não tem resposta da Steam.</summary>
+    public static void Definir(List<string> pastas, DualSense.Modo padrao)
+    {
+        lock (Gate) { Db.PastasExtras = pastas; Db.Padrao = padrao; }
+        Save();
+    }
+
     // ---------------- estado para o DualSense e a interface ----------------
     public static (string key, Jogo jogo)? Atual
     {

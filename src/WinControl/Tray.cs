@@ -121,8 +121,8 @@ public sealed class Tray : IDisposable
         _menu.Items.Add(cenas);
 
         var lamp = new WF.ToolStripMenuItem("Lâmpada");
-        foreach (var (label, b, t) in new[] { ("Noite", 1, 0), ("Relaxar", 35, 15), ("Padrão", 50, 50), ("Foco", 100, 100) })
-            lamp.DropDownItems.Add(Item($"Ligar: {label} ({b}%)", () => Lamp.PresetOn(b, t)));
+        foreach (var p in Conforto.Predefinicoes)
+            lamp.DropDownItems.Add(Item($"Ligar: {p.Nome} ({p.Brilho}%)", () => Lamp.PresetOn(p.Brilho, p.Temperatura)));
         lamp.DropDownItems.Add(new WF.ToolStripSeparator());
         var timers = new WF.ToolStripMenuItem("Desligar em");
         foreach (var (mins, label) in new[] { (15, "15 min"), (30, "30 min"), (60, "1 h"), (120, "2 h") })
@@ -138,7 +138,7 @@ public sealed class Tray : IDisposable
         foreach (var m in new[] { DisplayProjection.Mode.PcScreenOnly, DisplayProjection.Mode.Extend, DisplayProjection.Mode.SecondScreenOnly })
             proj.DropDownItems.Add(Item(DisplayProjection.Label(m), () => { DisplayProjection.Apply(m); Bus.Notify(); }, check: current == m));
         _menu.Items.Add(proj);
-        _menu.Items.Add(Item("Girar monitor (Ctrl+Alt+R)", RotateNow));
+        _menu.Items.Add(Item("Girar monitor" + Hotkeys.Sufixo("atalho_girar"), RotateNow));
 
         var pad = new WF.ToolStripMenuItem($"Controle: {DualSense.Status()}");
         pad.DropDownItems.Add(Item("Automático por jogo", () => DualSense.SetAutomatico(!DualSense.Cfg.Automatico), check: DualSense.Cfg.Automatico));

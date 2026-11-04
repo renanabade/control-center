@@ -55,8 +55,8 @@ public sealed partial class PerifericosPage : Page
             bool mouse = Perifericos.MouseOk, teclado = Perifericos.TecladoOk;
             var dinamicos = Perifericos.Dinamicos;
             var achados = new List<string>();
-            if (mouse) achados.Add("Razer DeathAdder V2");
-            if (teclado) achados.Add("Redragon Kumara");
+            if (mouse) achados.Add(Perifericos.NomeMouse);
+            if (teclado) achados.Add(Perifericos.NomeTeclado);
             achados.AddRange(dinamicos);
             Status.Text = achados.Count > 0 ? string.Join(" · ", achados) : "Nenhum aparelho compatível encontrado";
             MouseItem.Visibility = mouse ? Visibility.Visible : Visibility.Collapsed;

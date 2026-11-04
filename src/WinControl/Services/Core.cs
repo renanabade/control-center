@@ -126,10 +126,11 @@ public static class Core
                     prev = now;     // antes da lâmpada: se ela falhar, não reage de novo à mesma mudança
                     bool byScene = (DateTime.UtcNow - Theme.NightLightSetAt).TotalSeconds < 15;
                     if (Conforto.Flag("tema_automatico") && !byScene) Theme.SetDark(now);
-                    if (now && Lamp.RefreshState() && Lamp.Cur.On)
+                    if (now && Conforto.Flag("luz_noturna_lampada") && Lamp.RefreshState() && Lamp.Cur.On)
                     {
-                        Lamp.ApplyWhite(1, 0);
-                        Log.Write("Night Light ativou: lampada 1% / mais quente");
+                        int b = Conforto.Inteiro("luz_noturna_brilho", 1), t = Conforto.Inteiro("luz_noturna_temperatura", 0);
+                        Lamp.ApplyWhite(b, t);
+                        Log.Write($"Night Light ativou: lampada {b}% / temperatura {t}");
                     }
                     Bus.Notify();
                 }
