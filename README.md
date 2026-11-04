@@ -11,7 +11,8 @@ Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita e
 - **Projetar** (o mesmo do Win+P) e **girar um monitor** por atalho.
 - **DualSense** por USB ou Bluetooth: cor e intensidade da luz, emulação de **Xbox 360** ou **PS4** (ViGEmBus) e
   troca automática do modo conforme o jogo.
-- **Periféricos**: luz do mouse Razer e do teclado Redragon, sem os programas dos fabricantes.
+- **Periféricos**: luz do mouse Razer DeathAdder V2 e dos teclados Redragon Kumara V2 e Pro, sem os programas dos
+  fabricantes. Os outros aparelhos ficam com a Iluminação Dinâmica do Windows.
 - **Configurações** numa janela própria, com guia para a lâmpada e para a API, sem editar arquivos.
 - **API REST** opcional (ASP.NET Core) para controlar cenas e aparelhos por outros dispositivos da rede: vem desligada e
   se liga nas configurações. Veja [docs/api.md](docs/api.md).
@@ -19,7 +20,12 @@ Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita e
 Leve parado: cerca de 0,2% de um núcleo e 95 MB, porque reage a eventos do Windows em vez de ficar consultando. A
 medição é sem controle virtual ativo: veja [docs/desempenho.md](docs/desempenho.md).
 
-## Começo rápido
+## Instalar
+
+Baixe a versão mais recente em [Releases](https://github.com/renanabade/control-center/releases), extraia e abra
+`WinControl.exe`. Já tem a configuração de outro PC? Veja [como levá-la](docs/outro-pc.md).
+
+## Começo rápido, a partir do código
 
 1. **Instale o [.NET 10 SDK](https://dotnet.microsoft.com/download).** Pelo winget:
    ```powershell
@@ -66,6 +72,7 @@ Detalhes e formato dos arquivos: [docs/configuracao.md](docs/configuracao.md).
 
 - [docs/api.md](docs/api.md): a API REST: como rodar, rotas, erros e segurança.
 - [docs/lampada.md](docs/lampada.md): configurar a lâmpada (chave, IP, Bluetooth).
+- [docs/outro-pc.md](docs/outro-pc.md): levar a configuração para outro PC.
 - [docs/configuracao.md](docs/configuracao.md): referência dos arquivos `lamp_config.json` e `conforto.json`.
 - [docs/dualsense.md](docs/dualsense.md): controle DualSense, luz, emulação, modo automático, drivers e periféricos.
 - [docs/problemas.md](docs/problemas.md): solução de problemas.

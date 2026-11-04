@@ -21,6 +21,19 @@ public static class SelfTest
                          && Lamp.ValidarConfig("abc", chave, "", "42:07", false) != null;
             P($"CONFIG validacao: aceita={validaOk} recusa={recusaOk} (esperado True True)");
             P($"API instalacao: aceita={ApiServico.ValidarInstalacao(5080, "admin") == null} recusa={ApiServico.ValidarInstalacao(80, "admin") != null && ApiServico.ValidarInstalacao(5080, "a'; rm") != null} (esperado True True)");
+            // arquivo de configuração: ida e volta numa pasta temporária, com senha certa, senha errada e nome estranho
+            string temp = Directory.CreateTempSubdirectory("cc-backup").FullName;
+            try
+            {
+                string pacote = Path.Combine(temp, "x" + Backup.Extensao);
+                File.WriteAllText(pacote, Backup.Cifrar(new Dictionary<string, string> { ["lamp_config.json"] = "conteudo", ["..\\fora.txt"] = "invasor" }, "senha-teste"));
+                int gravados = Backup.Importar(pacote, "senha-teste", temp);
+                bool senhaErrada = false;
+                try { Backup.Importar(pacote, "outra-senha", temp); }
+                catch (Backup.Erro) { senhaErrada = true; }
+                P($"BACKUP ida_e_volta={gravados == 1 && File.ReadAllText(Path.Combine(temp, "lamp_config.json")) == "conteudo"} senha_errada_recusada={senhaErrada} nome_estranho_ignorado={!File.Exists(Path.Combine(Path.GetDirectoryName(temp)!, "fora.txt"))} (esperado True True True)");
+            }
+            finally { Directory.Delete(temp, recursive: true); }
             // nada de chave aqui: só o que dá para colar num pedido de ajuda
             P($"REDE lugares={Rede.Atuais.Count} lampadas={Lamp.Todas.Count} aqui={Lamp.Aqui.Count}");
             Lamp.ProcurarSemIp(agora: true);
