@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 <#
   Instala a ControlCenter.Api como serviço do Windows, na conta LocalService (a de menos privilégio que ainda usa a rede).
   Rode num PowerShell como administrador. Na primeira vez, gera e mostra a senha da API uma única vez.
@@ -57,7 +57,8 @@ New-NetFirewallRule -DisplayName $regra -Direction Inbound -Protocol TCP -LocalP
 Start-Service $servico
 $pronto = $null
 foreach ($i in 1..20) {
-    try { $pronto = Invoke-RestMethod "http://localhost:$Porta/health/pronto" -TimeoutSec 2; break } catch { Start-Sleep 1 }
+    # 127.0.0.1, não localhost: o serviço só escuta em IPv4, e tentar o ::1 antes gasta quase todo o tempo de espera
+    try { $pronto = Invoke-RestMethod "http://127.0.0.1:$Porta/health/pronto" -TimeoutSec 5; break } catch { Start-Sleep 1 }
 }
 if (-not $pronto) { throw 'O serviço não respondeu. Veja o Visualizador de Eventos, em Aplicativo.' }
 

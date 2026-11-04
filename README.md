@@ -2,6 +2,8 @@
 
 Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita em C# com WinUI 3.
 
+![Painel de lâmpadas do Control Center, com cinco lâmpadas e os controles de brilho e temperatura](docs/imagens/painel.png)
+
 - **Lâmpadas Tuya** (G-Light) pela rede local, sem nuvem: ligar/desligar, brilho, temperatura, cor e timer, todas juntas
   ou uma por uma. Mostra só as da rede em que o PC está, sem precisar escolher. Se o Wi-Fi de uma dormir, ela acorda
   pelo **Bluetooth**.

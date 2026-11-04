@@ -72,6 +72,14 @@ public static class Tuya
         return buf;
     }
 
+    /// <summary>Conecta com limite de tempo. A tentativa que passa do limite termina depois, sozinha: sem observá-la, cada uma virava um erro falso no log.</summary>
+    private static bool Conectar(TcpClient client, string ip, int timeoutMs)
+    {
+        var tentativa = client.ConnectAsync(ip, 6668);
+        tentativa.ContinueWith(t => _ = t.Exception, TaskContinuationOptions.OnlyOnFaulted);
+        return tentativa.Wait(timeoutMs);
+    }
+
     private static byte[]? ReadExact(NetworkStream s, int n)
     {
         var buf = new byte[n];
@@ -119,7 +127,7 @@ public static class Tuya
             try
             {
                 using var client = new TcpClient();
-                if (!client.ConnectAsync(ip, 6668).Wait(timeoutMs))
+                if (!Conectar(client, ip, timeoutMs))
                     throw new TimeoutException("conexao");
                 client.ReceiveTimeout = client.SendTimeout = timeoutMs;
                 using var stream = client.GetStream();
@@ -259,7 +267,7 @@ public static class Tuya
             try
             {
                 using var client = new TcpClient();
-                if (!client.ConnectAsync(ip, 6668).Wait(timeoutMs)) throw new TimeoutException("conexao");
+                if (!Conectar(client, ip, timeoutMs)) throw new TimeoutException("conexao");
                 client.ReceiveTimeout = client.SendTimeout = timeoutMs;
                 using var stream = client.GetStream();
                 if (NegociarSessao(stream, chave) is not { } sessao)
@@ -303,7 +311,7 @@ public static class Tuya
             try
             {
                 using var c = new TcpClient();
-                if (c.ConnectAsync(ip, 6668).Wait(600) && c.Connected) abertos.Add(ip);
+                if (Conectar(c, ip, 600) && c.Connected) abertos.Add(ip);
             }
             catch (Exception) { /* fechada: é o caso da maioria */ }
         });

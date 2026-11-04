@@ -71,7 +71,7 @@ ligado o tempo todo. Com `ble_mac` configurado, quando ligar pelo Wi-Fi falha, o
 Enquanto a lâmpada está nesse estado, o painel mostra **"Dormindo (acorda pelo Bluetooth)"** em vez de "Sem conexão".
 
 **Achar o MAC:** procure, num app de scan BLE (por exemplo, nRF Connect no celular), um dispositivo chamado `TY`
-com o serviço `0xA201`. O MAC tem o formato `42:07:67:06:8A:51`.
+com o serviço `0xA201`. O MAC tem o formato `AA:BB:CC:11:22:33`.
 
 O PC precisa ter Bluetooth ligado. Não é preciso parear: o Windows conecta direto.
 

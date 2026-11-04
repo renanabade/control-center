@@ -1,4 +1,4 @@
-#Requires -RunAsAdministrator
+﻿#Requires -RunAsAdministrator
 # Remove o serviço e a regra do firewall. O histórico e a senha ficam, a não ser que se peça -ApagarDados.
 param(
     [switch]$ApagarDados,

@@ -15,7 +15,7 @@ public static class SelfTest
             Lamp.Load();
             // tela de configurações: o que ela aceita e recusa, sem gravar nada
             string chave = new('x', 16);
-            bool validaOk = Lamp.ValidarConfig("abc", chave, "", "", false) == null && Lamp.ValidarConfig("abc", "", "192.168.0.10", "42:07:67:06:8A:51", true) == null;
+            bool validaOk = Lamp.ValidarConfig("abc", chave, "", "", false) == null && Lamp.ValidarConfig("abc", "", "192.168.0.10", "AA:BB:CC:11:22:33", true) == null;
             bool recusaOk = Lamp.ValidarConfig("", chave, "", "", false) != null && Lamp.ValidarConfig("abc", "", "", "", false) != null
                          && Lamp.ValidarConfig("abc", "curta", "", "", true) != null && Lamp.ValidarConfig("abc", chave, "1.2", "", false) != null
                          && Lamp.ValidarConfig("abc", chave, "", "42:07", false) != null;
