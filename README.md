@@ -2,8 +2,9 @@
 
 Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita em C# com WinUI 3.
 
-- **Lâmpada Tuya** (G-Light) pela rede local, sem nuvem: ligar/desligar, brilho, temperatura, cor e timer. Se o
-  Wi-Fi dela dormir, acorda pelo **Bluetooth**.
+- **Lâmpadas Tuya** (G-Light) pela rede local, sem nuvem: ligar/desligar, brilho, temperatura, cor e timer, todas juntas
+  ou uma por uma. Mostra só as da rede em que o PC está, sem precisar escolher. Se o Wi-Fi de uma dormir, ela acorda
+  pelo **Bluetooth**.
 - **Brilho dos monitores**: DDC/CI para monitores externos e WMI para a tela do notebook.
 - **Tema claro/escuro** e **Luz Noturna**.
 - **Cenas** (Trabalho, Noite, Filme...) que ajustam tudo de uma vez, e uma **agenda** por horário.
@@ -32,9 +33,9 @@ medição é sem controle virtual ativo: veja [docs/desempenho.md](docs/desempen
 3. **Rode** `src\WinControl\bin\Release\net10.0-windows10.0.26100.0\win-x64\WinControl.exe` com dois cliques ou num
    terminal normal. Veja o [aviso sobre isolamento](docs/problemas.md#nada-do-que-eu-mudo-tem-efeito) antes de abrir
    o app de dentro de outro programa.
-4. **Configure a lâmpada** em bandeja → **Configurações** → **Lâmpada**, que tem o passo a passo. Para buscar a chave,
-   basta rodar `tools/pegar_chave.py` e escanear um QR code no Smart Life. Detalhes no
-   [guia da lâmpada](docs/lampada.md).
+4. **Configure as lâmpadas** em bandeja → **Configurações** → **Lâmpada**, que tem o passo a passo. Para buscar todas
+   as da conta, basta rodar `tools/pegar_chave.py` e escanear um QR code no Smart Life. Detalhes no
+   [guia das lâmpadas](docs/lampada.md).
 
 Sem a lâmpada configurada, o resto (telas, tema, cenas, projetar) funciona normalmente. O painel avisa
 "Não configurada" e diz o que falta.
@@ -51,7 +52,8 @@ Sem a lâmpada configurada, o resto (telas, tema, cenas, projetar) funciona norm
 
 ### Como as cenas funcionam
 
-- Uma cena aplica **tema**, **Luz Noturna**, **brilho das telas** e **lâmpada**. Cada parte é opcional.
+- Uma cena aplica **tema**, **Luz Noturna**, **brilho das telas** e **lâmpada**. Cada parte é opcional. A parte da
+  lâmpada vale para todas as da rede em que o PC está, e as regras abaixo valem para cada uma delas.
 - A cena **nunca acende uma lâmpada apagada**. Com a lâmpada ligada, ela ajusta na hora. Com a lâmpada apagada, o
   ajuste fica combinado para o **próximo "ligar"** e vale só para ele.
 - Ligar a lâmpada sem cena pendente **mantém o último estado**: brilho, temperatura e cor de quando ela apagou.
@@ -76,7 +78,7 @@ Tudo fica em `%APPDATA%\win-control`, **fora do repositório**, porque ali está
 
 | Arquivo | Conteúdo |
 |---|---|
-| `lamp_config.json` | id, IP, chave e MAC Bluetooth da lâmpada |
+| `lamp_config.json` | id, IP, chave, MAC Bluetooth e redes de cada lâmpada |
 | `conforto.json` | cenas, agenda e opções |
 | `dualsense.json`, `jogos.json`, `perifericos.json` | controle, modo por jogo e periféricos |
 | `win-control.log` | log. A primeira linha de cada início diz **qual pasta de config está em uso**. |

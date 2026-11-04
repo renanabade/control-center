@@ -7,30 +7,47 @@
     <ScrollViewer>
         <StackPanel Padding="28,24" Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
             <StackPanel>
-                <TextBlock Text="Lâmpada" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock Text="Lâmpadas" Style="{StaticResource SubtitleTextBlockStyle}" />
                 <TextBlock x:Name="Status" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
 
-            <Expander x:Name="Guia" Header="Como achar o ID e a chave" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+            <TextBlock TextWrapping="Wrap"
+                       Text="Cada lâmpada pertence à rede onde ela foi encontrada. O painel mostra só as da rede em que o PC está: em outro lugar, as daqui somem sozinhas." />
+
+            <Expander x:Name="Guia" Header="Como buscar as lâmpadas da sua conta" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
                 <StackPanel Spacing="10">
-                    <TextBlock TextWrapping="Wrap" Text="Só serve para lâmpadas Tuya, as do app Smart Life. O app fala com ela direto pela rede, sem nuvem, e a chave é o que cifra os comandos." />
+                    <TextBlock TextWrapping="Wrap" Text="Só serve para lâmpadas Tuya, as do app Smart Life. O app fala com elas direto pela rede, sem nuvem, e a chave é o que cifra os comandos." />
                     <TextBlock TextWrapping="Wrap" Text="1. Instale o Python e as dependências, num terminal normal, na pasta do projeto:" />
                     <TextBlock IsTextSelectionEnabled="True" FontFamily="Consolas" TextWrapping="Wrap"
                                Text="winget install Python.Python.3.13&#x0a;py -m pip install -r tools\requirements.txt" />
                     <TextBlock TextWrapping="Wrap" Text="2. Rode o script abaixo. Ele pede o User Code, que fica no Smart Life em Eu, engrenagem, Conta e Segurança, User Code." />
                     <TextBlock IsTextSelectionEnabled="True" FontFamily="Consolas" Text="py tools\pegar_chave.py" />
-                    <TextBlock TextWrapping="Wrap" Text="3. No Smart Life, toque em Eu, ícone de scan, escaneie o QR code e confirme. O script grava o ID e a chave sozinho, sem mostrá-la." />
-                    <TextBlock TextWrapping="Wrap" Text="4. Volte aqui e clique em Recarregar do arquivo." />
+                    <TextBlock TextWrapping="Wrap" Text="3. No Smart Life, toque em Eu, ícone de scan, escaneie o QR code e confirme. O script grava todas as lâmpadas da conta, sem mostrar as chaves." />
+                    <TextBlock TextWrapping="Wrap" Text="4. Volte aqui e clique em Recarregar do arquivo. Tem lâmpadas em outra conta? Repita com o User Code dela: elas se somam às que já estão aqui." />
                     <HyperlinkButton Content="Guia completo, com Bluetooth e IP fixo" NavigateUri="https://github.com/renanabade/control-center/blob/main/docs/lampada.md" Padding="0" />
                 </StackPanel>
             </Expander>
 
             <Border Style="{StaticResource ConfigCardStyle}">
                 <StackPanel Spacing="12">
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="Lista" Header="Lâmpada" HorizontalAlignment="Stretch" SelectionChanged="Lista_SelectionChanged" />
+                        <Button Grid.Column="1" Content="Nova" VerticalAlignment="Bottom" Click="Nova_Click" />
+                        <Button x:Name="Remover" Grid.Column="2" Content="Remover" VerticalAlignment="Bottom" Click="Remover_Click" />
+                    </Grid>
+                    <TextBlock x:Name="Detalhe" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <TextBox x:Name="NomeBox" Header="Nome" PlaceholderText="Sala, Quarto..." />
                     <TextBox x:Name="IdBox" Header="ID do dispositivo" />
                     <PasswordBox x:Name="ChaveBox" Header="Chave local (local_key)" MaxLength="16" />
                     <TextBox x:Name="IpBox" Header="IP (opcional)" PlaceholderText="Vazio: o app acha a lâmpada sozinho" />
                     <TextBox x:Name="MacBox" Header="MAC Bluetooth (opcional)" PlaceholderText="42:07:67:06:8A:51. Acorda a lâmpada quando o Wi-Fi dela dorme" />
+                    <ToggleSwitch x:Name="NestaRede" Header="Pertence à rede em que o PC está agora" />
                     <InfoBar x:Name="Aviso" IsClosable="True" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
                         <Button Content="Salvar" Style="{StaticResource AccentButtonStyle}" Click="Salvar_Click" />

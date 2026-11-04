@@ -8,6 +8,8 @@
   usar uma config diferente da do usuário. Use `explorer.exe "<caminho do exe>"` ou o terminal do usuário. Leituras
   e gravações em `%APPDATA%\win-control` feitas desse shell também podem cair na cópia isolada.
 - A config do usuário (`%APPDATA%\win-control`) tem a `local_key` da lâmpada: nunca a imprima, nunca a commite.
+- `Lamp.*` são comandos para "todas as lâmpadas da rede atual"; `Lampada` é uma só. IDs, MACs e User Code reais nunca vão
+  para o repositório, que é público.
 - Regras das cenas (não mudar sem o usuário pedir): cena/agenda nunca acende lâmpada apagada; o ajuste da cena vale
   para um único "ligar"; ligar sem cena pendente mantém o último estado da lâmpada. Ver README.
 - Teste rápido sem interface: `WinControl.exe --selftest` grava `selftest.txt` na pasta de config.

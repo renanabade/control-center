@@ -85,10 +85,10 @@ curl -X POST http://PC:5080/api/v1/cenas/Noite/aplicar -H "Authorization: Bearer
 | `GET /estado` | Tudo de uma vez. |
 | `GET /cenas` | Lista as cenas. |
 | `POST /cenas/{nome}/aplicar` | Aplica uma cena. |
-| `GET /dispositivos/lampada` | Estado da lâmpada. |
-| `PUT /dispositivos/lampada/energia` | `{"ligada": true}` |
-| `PATCH /dispositivos/lampada` | `{"brilho": 50, "temperatura": 30}` ou `{"matiz": 240, "saturacao": 1000}` |
-| `PUT /dispositivos/lampada/timer` | `{"minutos": 30}` (0 cancela) |
+| `GET /dispositivos/lampada` | Resumo das lâmpadas da rede em que o PC está. Cada uma aparece em `lampadas`, no `GET /estado`. |
+| `PUT /dispositivos/lampada/energia` | `{"ligada": true}`, em todas as daqui |
+| `PATCH /dispositivos/lampada` | `{"brilho": 50, "temperatura": 30}` ou `{"matiz": 240, "saturacao": 1000}`, nas acesas daqui |
+| `PUT /dispositivos/lampada/timer` | `{"minutos": 30}` (0 cancela), nas acesas daqui |
 | `GET /dispositivos/telas` | Monitores e brilho. |
 | `PUT /dispositivos/telas/brilho` | Todas as telas: `{"valor": 40}` |
 | `PUT /dispositivos/telas/{nome}/brilho` | Uma tela. |

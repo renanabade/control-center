@@ -51,7 +51,8 @@ public sealed partial class MainPage : Page
                 DualSense.Modo.Ps4 => "PS4",
                 _ => "DualSense",
             };
-            LampLine.Text = $"Lâmpada · {Ui.LampStatus()}";
+            LampLine.Text = $"{(Lamp.Aqui.Count > 1 ? "Lâmpadas" : "Lâmpada")} · {Ui.LampStatus()}";
+            LampCaption.Text = Lamp.Aqui.Count > 1 ? "Lâmpadas" : "Lâmpada";
             AgendaLine.Text = Conforto.Flag("agenda_ativa") && Conforto.NextItem() is { } nxt
                 ? $"Agenda · {nxt["hora"]} → {Conforto.Describe(nxt)}"
                 : "Agenda pausada";

@@ -21,7 +21,12 @@ public static class SelfTest
                          && Lamp.ValidarConfig("abc", chave, "", "42:07", false) != null;
             P($"CONFIG validacao: aceita={validaOk} recusa={recusaOk} (esperado True True)");
             P($"API instalacao: aceita={ApiServico.ValidarInstalacao(5080, "admin") == null} recusa={ApiServico.ValidarInstalacao(80, "admin") != null && ApiServico.ValidarInstalacao(5080, "a'; rm") != null} (esperado True True)");
+            // nada de chave aqui: só o que dá para colar num pedido de ajuda
+            P($"REDE lugares={Rede.Atuais.Count} lampadas={Lamp.Todas.Count} aqui={Lamp.Aqui.Count}");
+            Lamp.ProcurarSemIp(agora: true);
             bool ok = Lamp.RefreshState();
+            foreach (var l in Lamp.Aqui)
+                P($"  {l.Nome}: v{l.Version} ip={(l.Ip.Length > 0 ? "sim" : "nao")} ble={l.HasBle} online={l.Cur.Online} ligada={l.Cur.On} brilho={l.Cur.B}% erro={l.UltimoErro}");
             var c = Lamp.Cur;
             P($"LAMPADA leitura: ok={ok} online={c.Online} ligada={c.On} brilho={c.B}% temp={c.T} modo={c.Mode} h={c.H} s={c.S} timer={c.Timer}s");
 

@@ -40,7 +40,7 @@
                             <FontIcon Glyph="&#xE76C;" FontSize="12" />
                         </Button>
                     </Grid>
-                    <TextBlock Text="Lâmpada" Style="{StaticResource TileCaptionStyle}" />
+                    <TextBlock x:Name="LampCaption" Text="Lâmpada" Style="{StaticResource TileCaptionStyle}" />
                 </StackPanel>
 
                 <!-- Projetar: o mesmo do Win+P / Fn+F7 -->

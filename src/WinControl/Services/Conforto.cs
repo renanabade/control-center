@@ -91,16 +91,17 @@ public static class Conforto
         return string.Join(" · ", parts);
     }
 
-    /// <summary>
-    /// Brilho/temperatura que a lâmpada deve usar quando eu for ligá-la: o que a última cena pediu (ex.: Noite = 1% quente).
-    /// Cena e agenda nunca ligam a lâmpada sozinhas; elas só deixam isso combinado para o próximo "ligar".
-    /// </summary>
-    public static (int b, int t)? PendingLamp;
+    /// <summary>O ajuste combinado por uma cena para o próximo "ligar". Cada lâmpada daqui guarda o seu: vale uma vez para cada.</summary>
+    public static (int b, int t)? PendingLamp
+    {
+        get => Lamp.Aqui.Select(l => l.Pendente).FirstOrDefault(p => p != null);
+        set { foreach (var l in Lamp.Aqui) l.Pendente = value; }
+    }
 
     /// <summary>
-    /// A parte da lâmpada de uma cena ou item da agenda. Nunca acende a lâmpada: se ela já está ligada, só ajusta
-    /// brilho e temperatura; se está desligada, guarda o ajuste para o próximo "ligar". Uma cena que apaga a luz
-    /// ("ligada": false) só apaga quando eu mesmo a escolho, nunca pela agenda.
+    /// A parte da lâmpada de uma cena ou item da agenda, para cada lâmpada daqui. Nunca acende nenhuma: a que já está
+    /// ligada só ajusta brilho e temperatura; a desligada guarda o ajuste para o próximo "ligar" dela. Uma cena que apaga
+    /// a luz ("ligada": false) só apaga quando eu mesmo a escolho, nunca pela agenda.
     /// </summary>
     public static void ApplyLampPart(JsonObject lp, bool auto)
     {
@@ -112,10 +113,13 @@ public static class Conforto
             return;
         }
         int? b = lp["brilho"]?.GetValue<int>(), t = lp["temperatura"]?.GetValue<int>();
-        if (b != null) PendingLamp = (b.Value, t ?? Lamp.Cur.T);
-        Lamp.RefreshState();                                 // não confia no cache: ligar/desligar pode ter sido pelo app da Tuya
-        if (Lamp.Cur.On && Lamp.Cur.Online)
-            Lamp.ApplyWhite(b ?? Lamp.Cur.B, t ?? Lamp.Cur.T);
+        Lamp.Cada(l =>
+        {
+            if (b != null) l.Pendente = (b.Value, t ?? l.Cur.T);
+            // não confia no cache: ligar/desligar pode ter sido pelo app da Tuya
+            l.RefreshState(rapido: Lamp.Aqui.Count > 1);
+            if (l.Cur.On && l.Cur.Online) l.ApplyWhite(b ?? l.Cur.B, t ?? l.Cur.T);
+        });
     }
 
     /// <summary>Aplica uma cena ou item da agenda. Bloqueia enquanto fala com a lâmpada: chame numa thread.</summary>

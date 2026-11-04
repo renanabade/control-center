@@ -1,7 +1,30 @@
-# Configurar a lâmpada
+# Configurar as lâmpadas
 
-O app fala com a lâmpada Tuya **direto pela rede local** (protocolo 3.3, TCP 6668) e, se o Wi-Fi dela estiver
-dormindo, pelo **Bluetooth**. Os dois caminhos exigem a `local_key` da lâmpada.
+O app fala com as lâmpadas Tuya **direto pela rede local** (protocolos 3.3 e 3.5, TCP 6668) e, se o Wi-Fi de uma delas
+estiver dormindo, pelo **Bluetooth**. Os dois caminhos exigem a `local_key` da lâmpada.
+
+## Várias lâmpadas, em vários lugares
+
+**O painel mostra só as lâmpadas da rede em que o PC está.** Na sua casa, aparecem as de lá; na casa de outra pessoa,
+as de lá. As outras nem são consultadas, então não atrasam nada. Não há nada para escolher:
+
+- Cada lâmpada aprende onde mora: fica registrada a rede em que ela foi adicionada e toda rede em que der sinal de vida.
+- O lugar é o **roteador**, não o nome do Wi-Fi: 2,4 GHz, 5 GHz e cabo da mesma casa contam como um lugar só. VPN não muda de lugar.
+- Lâmpada apagada ou dormindo continua aparecendo no lugar dela.
+- Para corrigir manualmente, use **Pertence à rede em que o PC está agora** em Configurações → Lâmpada.
+
+Com mais de uma no lugar:
+
+| Onde | O que faz |
+|---|---|
+| Bloco Lâmpadas no painel | Com alguma acesa, apaga todas. Com todas apagadas, liga todas. |
+| Seta do bloco | Abre os controles, com **Todas** ou uma lâmpada de cada vez. |
+| Menu da bandeja | Tem o liga/desliga de cada uma. |
+| Cenas e agenda | Valem para todas as daqui, com as [mesmas regras](../README.md#como-as-cenas-funcionam), lâmpada por lâmpada. |
+
+**Como o app acha cada uma:** ele escuta os avisos UDP que elas mandam. Quem não avisa, e continua sem IP, é procurado
+entre os aparelhos da rede local com a porta 6668 aberta, no máximo a cada 5 minutos. Só a lâmpada dona da chave consegue
+responder, e a pergunta apenas lê o estado. Sem nenhuma lâmpada configurada, nada disso roda.
 
 Tudo isto se preenche em **Configurações → Lâmpada** (bandeja → **Configurações**), que também testa a conexão. A chave
 guardada nunca volta para a tela.
@@ -29,8 +52,9 @@ py tools\pegar_chave.py
 
 1. O script pede o **User Code**: no Smart Life, vá em **Eu → engrenagem → Conta e Segurança → User Code**.
 2. Abre um QR code. No Smart Life, toque em **Eu → ícone de scan**, escaneie e confirme.
-3. O script grava `id` e `local_key` em `%APPDATA%\win-control\lamp_config.json`. A chave não aparece na tela e o
-   login não fica salvo.
+3. O script grava **todas as lâmpadas da conta** em `%APPDATA%\win-control\lamp_config.json`. As chaves não aparecem
+   na tela e o login não fica salvo. Tem lâmpadas em outra conta? Rode de novo com o User Code dela: elas se somam.
+   Rode o script **estando na rede dessas lâmpadas**, para elas ficarem no lugar certo.
 4. Em **Configurações → Lâmpada**, clique em **Recarregar do arquivo**.
 
 > A chave muda se a lâmpada for **removida e adicionada de novo** no app. Nesse caso o log mostra

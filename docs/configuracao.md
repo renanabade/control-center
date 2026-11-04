@@ -7,15 +7,27 @@ opções também se ajustam na janela **Configurações**, sem editar nada à m�
 
 ```json
 {
-  "id": "eb98c0b4...",
-  "ip": "192.168.100.28",
-  "local_key": "16 caracteres",
-  "version": 3.3,
-  "ble_mac": "42:07:67:06:8A:51"
+  "lampadas": [
+    {
+      "id": "id do dispositivo",
+      "nome": "Sala",
+      "ip": "192.168.0.20",
+      "local_key": "16 caracteres",
+      "version": 3.3,
+      "ble_mac": "42:07:67:06:8A:51",
+      "redes": ["gw:0A1B2C3D4E5F"]
+    }
+  ]
 }
 ```
 
-Veja [lampada.md](lampada.md). Se o arquivo não existir, o app cria um modelo na primeira vez que abrir.
+| Chave | O que é |
+|---|---|
+| `nome` | Vem do Smart Life. Dá para trocar na tela de configurações. |
+| `ip`, `version` | O app descobre e mantém sozinho. `version` é `3.3` ou `3.5`. |
+| `redes` | Os lugares onde a lâmpada mora, pelo MAC do roteador. Sem a chave, ela fica na rede atual. Vazia, ela fica escondida até dar sinal de vida. |
+
+Veja [lampada.md](lampada.md). O formato antigo, de uma lâmpada só, é convertido sozinho ao abrir o app.
 
 ## `conforto.json`
 
@@ -58,7 +70,7 @@ Todas são opcionais. O que não aparece não é alterado.
 
 | Chave | Valores | Observação |
 |---|---|---|
-| `lampada` | `{"ligada": true, "brilho": 1-100, "temperatura": 0-100}` ou `{"ligada": false}` | Temperatura: 0 é a mais quente (2700K), 100 a mais fria (6500K). Nunca acende uma lâmpada apagada: guarda o ajuste para o próximo "ligar". `ligada: false` apaga só quando você escolhe a cena, nunca pela agenda. |
+| `lampada` | `{"ligada": true, "brilho": 1-100, "temperatura": 0-100}` ou `{"ligada": false}` | Vale para todas as lâmpadas da rede em que o PC está. Temperatura: 0 é a mais quente (2700K), 100 a mais fria (6500K). Nunca acende uma lâmpada apagada: guarda o ajuste para o próximo "ligar" de cada uma. `ligada: false` apaga só quando você escolhe a cena, nunca pela agenda. |
 | `telas` | `40` (todas) ou `{"LG ULTRAGEAR": 40, "Notebook": 20}` | O nome é o que aparece no painel. |
 | `tema` | `"escuro"` ou `"claro"` | |
 | `luz_noturna` | `true` ou `false` | Liga ou desliga a Luz Noturna do Windows. |

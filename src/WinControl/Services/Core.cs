@@ -8,7 +8,7 @@ namespace WinControl.Services;
 /// </summary>
 public static class Core
 {
-    private static string? _pendingKind;
+    private static readonly Dictionary<Lampada, string> Pendentes = [];
     private static readonly AutoResetEvent SendEvent = new(false);
     private static readonly AutoResetEvent Poke = new(false);
     private static DateTime _userAt = DateTime.MinValue;
@@ -26,10 +26,10 @@ public static class Core
     }
 
     // ---------------- lâmpada: envio ----------------
-    private static void Send(string kind)
+    private static void Send(string kind, IEnumerable<Lampada> alvos)
     {
         Touch();
-        _pendingKind = kind;
+        lock (Pendentes) foreach (var l in alvos) Pendentes[l] = kind;
         SendEvent.Set();
     }
 
@@ -40,32 +40,58 @@ public static class Core
             SendEvent.WaitOne();
             try
             {
-                var kind = _pendingKind;
-                var c = Lamp.Cur;
-                if (kind == "c" || (kind == "b" && c.Mode == "colour")) Lamp.ApplyColour(c.H, c.S, c.B);
-                else Lamp.ApplyWhite(c.B, c.T);
-                if (!c.Online) Bus.Notify();
+                KeyValuePair<Lampada, string>[] fila;
+                lock (Pendentes)
+                {
+                    fila = Pendentes.ToArray();
+                    Pendentes.Clear();
+                }
+                Parallel.ForEach(fila, p =>
+                {
+                    var c = p.Key.Cur;
+                    if (p.Value == "c" || (p.Value == "b" && c.Mode == "colour")) p.Key.ApplyColour(c.H, c.S, c.B);
+                    else p.Key.ApplyWhite(c.B, c.T);
+                });
+                if (fila.Any(p => !p.Key.Cur.Online)) Bus.Notify();
             }
             catch (Exception e) { Log.Write($"erro ao enviar para a lampada: {e.Message}"); }
         }
     }
 
-    public static void SetLampBrightness(int b) { Lamp.Cur.B = Math.Clamp(b, 1, 100); Bus.Notify(); Send("b"); }
+    /// <summary>Uma lâmpada, ou todas as daqui quando nenhuma é indicada.</summary>
+    private static IReadOnlyList<Lampada> Alvos(Lampada? alvo) => alvo != null ? [alvo] : Lamp.Aqui;
 
-    public static void SetLampTemperature(int t) { Lamp.Cur.T = Math.Clamp(t, 0, 100); Lamp.Cur.Mode = "white"; Bus.Notify(); Send("t"); }
-
-    public static void SetLampColour(int h, int s)
+    public static void SetLampBrightness(int b, Lampada? alvo = null)
     {
-        Lamp.Cur.H = ((h % 360) + 360) % 360; Lamp.Cur.S = Math.Clamp(s, 0, 1000); Lamp.Cur.Mode = "colour";
-        Bus.Notify(); Send("c");
+        var a = Alvos(alvo);
+        foreach (var l in a) l.Cur.B = Math.Clamp(b, 1, 100);
+        Bus.Notify();
+        Send("b", a);
     }
 
-    public static void SetLampMode(bool colour)
+    public static void SetLampTemperature(int t, Lampada? alvo = null)
+    {
+        var a = Alvos(alvo);
+        foreach (var l in a) { l.Cur.T = Math.Clamp(t, 0, 100); l.Cur.Mode = "white"; }
+        Bus.Notify();
+        Send("t", a);
+    }
+
+    public static void SetLampColour(int h, int s, Lampada? alvo = null)
+    {
+        var a = Alvos(alvo);
+        foreach (var l in a) { l.Cur.H = ((h % 360) + 360) % 360; l.Cur.S = Math.Clamp(s, 0, 1000); l.Cur.Mode = "colour"; }
+        Bus.Notify();
+        Send("c", a);
+    }
+
+    public static void SetLampMode(bool colour, Lampada? alvo = null)
     {
         // trocar de aba só muda o que é mostrado; a lâmpada muda quando o usuário mexer no controle
-        Lamp.Cur.Mode = colour ? "colour" : "white";
+        var a = Alvos(alvo);
+        foreach (var l in a) l.Cur.Mode = colour ? "colour" : "white";
         Bus.Notify();
-        Send(colour ? "c" : "t");
+        Send(colour ? "c" : "t", a);
     }
 
     // ---------------- telas ----------------
@@ -140,13 +166,10 @@ public static class Core
         }
     }
 
-    private static (bool, bool, int, int, string, int, int) Snapshot()
-    {
-        var c = Lamp.Cur;
-        return (c.On, c.Online, c.B, c.T, c.Mode, c.H, c.S);
-    }
+    private static string Snapshot() =>
+        string.Join("|", Lamp.Aqui.Select(l => { var c = l.Cur; return $"{l.Id}:{c.On}:{c.Online}:{c.B}:{c.T}:{c.Mode}:{c.H}:{c.S}"; }));
 
-    /// <summary>Mantém a lâmpada em dia: a cada 3 s com o painel aberto, a cada 30 s com ele fechado.</summary>
+    /// <summary>Mantém as lâmpadas daqui em dia: a cada 3 s com o painel aberto, a cada 30 s com ele fechado.</summary>
     private static void Poller()
     {
         Thread.Sleep(1000);
@@ -159,7 +182,8 @@ public static class Core
                 if (!busy)
                 {
                     var before = Snapshot();
-                    if (!Lamp.RefreshState()) Lamp.Rediscover();
+                    Lamp.RefreshState();
+                    Lamp.ProcurarSemIp();
                     if (PanelOpen || before != Snapshot()) Bus.Notify();
                 }
                 wait = busy ? 1 : PanelOpen ? (Lamp.Cur.Online ? 3 : 5) : 30;

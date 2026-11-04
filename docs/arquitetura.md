@@ -15,8 +15,9 @@ src/WinControl/
   Services/
     Common.cs          AppPaths (%APPDATA%\win-control), Log, Bus (aviso de "algo mudou")
     Core.cs            threads de fundo: envio coalescido p/ lâmpada, poller, vigia da Luz Noturna, autostart
-    Lamp.cs            estado e comandos da lâmpada (DPs Tuya), fallback Bluetooth, redescoberta de IP
-    Tuya.cs            protocolo local Tuya 3.3 (TCP 6668, AES-ECB) e descoberta UDP (6666/6667)
+    Lamp.cs            Lampada (estado e comandos de uma, fallback Bluetooth) e Lamp (quais moram nesta rede, comandos de todas as daqui)
+    Rede.cs            em que lugar o PC está, pelo MAC do roteador
+    Tuya.cs            protocolo local Tuya 3.3 (TCP 6668, AES-ECB) e 3.5 (AES-GCM, chave por conexão); avisos UDP (6666/6667)
     Ble.cs             protocolo Tuya BLE (GATT 2b10/2b11, AES-CBC, chave de sessão) para acordar a lâmpada
     Conforto.cs        cenas, agenda, conforto.json
     Theme.cs           tema claro/escuro e Luz Noturna (registro + broadcast, aviso de mudança na chave)
@@ -38,7 +39,8 @@ tools/
 ## Fluxo de dados
 
 - Quem muda algo chama `Bus.Notify()`. O painel e a bandeja assinam e se redesenham.
-- O **poller** lê a lâmpada a cada 3 s com o painel aberto e a cada 30 s com ele fechado.
+- O **poller** lê as lâmpadas desta rede a cada 3 s com o painel aberto e a cada 30 s com ele fechado, em paralelo.
+- `Lamp.*` significa "todas as lâmpadas daqui". Com uma só, cai direto nela, sem nenhuma diferença de comportamento.
 - Os sliders não falam direto com a lâmpada. Eles marcam o pedido e o **envio coalescido** (`Core.SendWorker`)
   manda só o último valor.
 - O painel só existe enquanto é usado: `App.OpenPanel` cria a janela e ela é fechada 3 min depois de escondida.
