@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace WinControl.Services;
@@ -731,7 +731,7 @@ public static class Lamp
         if (ip.Length > 0 && !(System.Net.IPAddress.TryParse(ip, out var a) && a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && ip.Count(c => c == '.') == 3))
             return "O IP precisa estar no formato 192.168.0.10, ou ficar vazio.";
         if (bleMac.Length > 0 && !System.Text.RegularExpressions.Regex.IsMatch(bleMac, "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"))
-            return "O MAC Bluetooth precisa estar no formato 42:07:67:06:8A:51, ou ficar vazio.";
+            return "O MAC Bluetooth precisa estar no formato AA:BB:CC:11:22:33, ou ficar vazio.";
         return null;
     }
 

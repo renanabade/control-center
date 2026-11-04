@@ -14,7 +14,7 @@ opções também se ajustam na janela **Configurações**, sem editar nada à m�
       "ip": "192.168.0.20",
       "local_key": "16 caracteres",
       "version": 3.3,
-      "ble_mac": "42:07:67:06:8A:51",
+      "ble_mac": "AA:BB:CC:11:22:33",
       "redes": ["gw:0A1B2C3D4E5F"]
     }
   ]

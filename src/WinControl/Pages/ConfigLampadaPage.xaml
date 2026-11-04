@@ -46,7 +46,7 @@
                     <TextBox x:Name="IdBox" Header="ID do dispositivo" />
                     <PasswordBox x:Name="ChaveBox" Header="Chave local (local_key)" MaxLength="16" />
                     <TextBox x:Name="IpBox" Header="IP (opcional)" PlaceholderText="Vazio: o app acha a lâmpada sozinho" />
-                    <TextBox x:Name="MacBox" Header="MAC Bluetooth (opcional)" PlaceholderText="42:07:67:06:8A:51. Acorda a lâmpada quando o Wi-Fi dela dorme" />
+                    <TextBox x:Name="MacBox" Header="MAC Bluetooth (opcional)" PlaceholderText="AA:BB:CC:11:22:33. Acorda a lâmpada quando o Wi-Fi dela dorme" />
                     <ToggleSwitch x:Name="NestaRede" Header="Pertence à rede em que o PC está agora" />
                     <InfoBar x:Name="Aviso" IsClosable="True" />
                     <StackPanel Orientation="Horizontal" Spacing="8">
