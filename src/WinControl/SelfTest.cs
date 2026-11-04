@@ -27,6 +27,21 @@ public static class SelfTest
             bool ok = Lamp.RefreshState();
             foreach (var l in Lamp.Aqui)
                 P($"  {l.Nome}: v{l.Version} ip={(l.Ip.Length > 0 ? "sim" : "nao")} ble={l.HasBle} online={l.Cur.Online} ligada={l.Cur.On} brilho={l.Cur.B}% erro={l.UltimoErro}");
+            if (Environment.GetCommandLineArgs().Contains("--selftest-rajada"))
+            {
+                // a rajada do controle de cor, sem mudar nada visível: reenvia o valor que cada lâmpada acesa já tem
+                foreach (var l in Lamp.Aqui.Where(x => x.Cur.On && x.Cur.Online && x.Cur.ModoBruto is "white" or "colour"))
+                {
+                    var (b0, t0, h0, s0) = (l.Cur.B, l.Cur.T, l.Cur.H, l.Cur.S);
+                    string tipo = l.Cur.Mode == "colour" ? "c" : "t";
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    for (int i = 0; i < 40; i++) { l.Enviar(tipo); Thread.Sleep(50); }
+                    while (l.EnvioEmAndamento && sw.Elapsed.TotalSeconds < 30) Thread.Sleep(50);
+                    l.RefreshState();
+                    bool igual = l.Cur.Mode == "colour" ? (l.Cur.H, l.Cur.S, l.Cur.B) == (h0, s0, b0) : (l.Cur.B, l.Cur.T) == (b0, t0);
+                    P($"RAJADA {l.Nome}: v{l.Version} pedidos=40 enviados={l.EnviosOk} falhas={l.EnviosFalhos} {sw.ElapsedMilliseconds}ms online={l.Cur.Online} valor_igual={igual}");
+                }
+            }
             var c = Lamp.Cur;
             P($"LAMPADA leitura: ok={ok} online={c.Online} ligada={c.On} brilho={c.B}% temp={c.T} modo={c.Mode} h={c.H} s={c.S} timer={c.Timer}s");
 

@@ -18,7 +18,7 @@ Com mais de uma no lugar:
 | Onde | O que faz |
 |---|---|
 | Bloco Lâmpadas no painel | Com alguma acesa, apaga todas. Com todas apagadas, liga todas. |
-| Seta do bloco | Abre os controles, com **Todas** ou uma lâmpada de cada vez. |
+| Seta do bloco | Abre os controles. O **nome** de cada lâmpada marca se ela entra nos ajustes, em qualquer combinação, e o **ícone** liga ou apaga só ela. **Todas** marca todas; com todas marcadas, um clique limpa a seleção. A escolha continua valendo até o app fechar. |
 | Menu da bandeja | Tem o liga/desliga de cada uma. |
 | Cenas e agenda | Valem para todas as daqui, com as [mesmas regras](../README.md#como-as-cenas-funcionam), lâmpada por lâmpada. |
 

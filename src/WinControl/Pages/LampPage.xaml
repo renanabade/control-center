@@ -7,6 +7,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -22,15 +23,15 @@
                     <TextBlock x:Name="Status" Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
-                <!-- com várias neste lugar: todas juntas ou uma por uma -->
-                <ComboBox x:Name="Escolha" Visibility="Collapsed" VerticalAlignment="Center" Margin="12,0,0,0" MinWidth="150"
-                          SelectionChanged="Escolha_SelectionChanged" ToolTipService.ToolTip="Qual lâmpada ajustar" />
             </StackPanel>
             <ToggleSwitch x:Name="Power" HorizontalAlignment="Right" OnContent="" OffContent="" MinWidth="0"
                           Toggled="Power_Toggled" />
         </Grid>
 
-        <Grid x:Name="Body" Grid.Row="1" Padding="20,4,20,16" ColumnSpacing="28">
+        <!-- com várias neste lugar: o nome marca quais os controles abaixo ajustam, o ícone liga ou apaga aquela na hora -->
+        <Grid x:Name="Chips" Grid.Row="1" Padding="20,0,20,8" ColumnSpacing="6" RowSpacing="6" Visibility="Collapsed" />
+
+        <Grid x:Name="Body" Grid.Row="2" Padding="20,4,20,12" ColumnSpacing="28">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />

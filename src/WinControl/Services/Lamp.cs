@@ -15,6 +15,7 @@ public sealed class Lampada(JsonObject cfg)
         public bool On;
         public int B = 50, T = 50;
         public string Mode = "white";
+        public string ModoBruto = "";     // o que a lâmpada informou: "scene" e "music" também aparecem aqui
         public int H = 30, S = 1000;
         public bool Online = true, Busy;
         public int Timer;                 // segundos restantes na última leitura
@@ -85,7 +86,7 @@ public sealed class Lampada(JsonObject cfg)
     }
 
     /// <summary>Executa um comando. Devolve a resposta, ou null se falhou (e marca offline).</summary>
-    private JsonObject? Call(uint cmd, JsonObject extra, bool rapido = false)
+    private JsonObject? Call(uint cmd, JsonObject extra, bool rapido = false, bool marcarOffline = true)
     {
         if (Ip.Length == 0)
         {
@@ -118,22 +119,116 @@ public sealed class Lampada(JsonObject cfg)
             _lastErr = msg;
             _ultimoErro = msg + hint;
         }
-        Cur.Online = false;
+        if (marcarOffline) Cur.Online = false;
         return null;
     }
 
     private static JsonObject Dps(JsonObject dps) => new() { ["dps"] = dps };
 
+    // ---------------- envio dos controles ----------------
+    private readonly object _envioGate = new();
+    private string? _envioPendente;
+    private bool _enviando;
+    private DateTime _protegidoAte = DateTime.MinValue;
+    private long _geracao;
+    private int _enviosOk, _enviosFalhos;
+
+    public int EnviosOk => _enviosOk;
+    public int EnviosFalhos => _enviosFalhos;
+
+    /// <summary>Tem valor escolhido no controle que a lâmpada ainda pode não ter recebido.</summary>
+    public bool EnvioEmAndamento
+    {
+        get { lock (_envioGate) return _enviando || _envioPendente != null || DateTime.UtcNow < _protegidoAte; }
+    }
+
+    /// <summary>
+    /// Pede o envio do que está em Cur. Cada lâmpada tem a própria fila, para a lenta não segurar as outras, e só o valor
+    /// mais recente importa: uma rajada do controle de cor vira poucos envios, sempre terminando no último.
+    /// </summary>
+    public void Enviar(string tipo)
+    {
+        lock (_envioGate)
+        {
+            _envioPendente = tipo;
+            _geracao++;
+            if (_enviando) return;
+            _enviando = true;
+        }
+        Task.Run(LoopEnvio);
+    }
+
+    private void LoopEnvio()
+    {
+        int falhas = 0;
+        while (true)
+        {
+            string tipo;
+            lock (_envioGate)
+            {
+                if (_envioPendente == null)
+                {
+                    _enviando = false;
+                    // a lâmpada leva um instante para refletir o comando: uma leitura logo depois devolveria o valor antigo
+                    _protegidoAte = DateTime.UtcNow.AddSeconds(1.5);
+                    return;
+                }
+                tipo = _envioPendente;
+                _envioPendente = null;
+            }
+            bool ok;
+            try { ok = EnviarAgora(tipo); }
+            catch (Exception e) { Log.Write($"{Nome}: erro ao enviar ({e.Message})"); ok = false; }
+            if (ok)
+            {
+                falhas = 0;
+                Interlocked.Increment(ref _enviosOk);
+                continue;
+            }
+            Interlocked.Increment(ref _enviosFalhos);
+            // o último valor precisa chegar: tenta de novo, a menos que já exista um mais novo na fila
+            if (++falhas >= 4)
+            {
+                Cur.Online = false;
+                Bus.Notify();
+                falhas = 0;
+                continue;
+            }
+            Thread.Sleep(200 * falhas);
+            lock (_envioGate) _envioPendente ??= tipo;
+        }
+    }
+
+    private bool EnviarAgora(string tipo)
+    {
+        var c = Cur;
+        if (!c.On) return true;             // apagada não recebe ajuste: nada a repetir
+        JsonObject dps;
+        if (tipo == "c" || (tipo == "b" && c.Mode == "colour"))
+        {
+            int h = ((c.H % 360) + 360) % 360, s = Math.Clamp(c.S, 0, 1000), br = Math.Clamp(c.B, 1, 100);
+            dps = new JsonObject { ["21"] = "colour", ["24"] = $"{h:x4}{s:x4}{Math.Max(10, br * 10):x4}" };
+        }
+        else dps = WhiteDps(Math.Clamp(c.B, 1, 100), Math.Clamp(c.T, 0, 100));
+        return Call(Tuya.CmdControl, Dps(dps), rapido: true, marcarOffline: false) != null;
+    }
+
     /// <summary>Lê o estado real da lâmpada e atualiza o cache. "rapido" não insiste: com várias, uma dormindo não segura as outras.</summary>
     public bool RefreshState(bool rapido = false)
     {
+        long geracao;
+        lock (_envioGate) geracao = _geracao;
         var st = Call(Tuya.CmdDpQuery, new JsonObject(), rapido);
         if (st == null || st["dps"] is not JsonObject dps)
         {
             Cur.Online = false;
             return false;
         }
+        // leitura de antes do último comando: traria de volta o valor antigo e ele seria reenviado por cima do novo
+        lock (_envioGate)
+            if (geracao != _geracao || _enviando || _envioPendente != null || DateTime.UtcNow < _protegidoAte) return true;
         Cur.On = dps["20"]?.GetValue<bool>() ?? false;
+        Cur.ModoBruto = dps["21"]?.ToString() ?? "";
         Cur.Mode = dps["21"]?.ToString() == "colour" ? "colour" : "white";
         Cur.T = Math.Clamp((int)Math.Round(ToInt(dps["23"], 500) / 10.0), 0, 100);
         string hsv = dps["24"]?.ToString() ?? "";
@@ -497,9 +592,10 @@ public static class Lamp
 
     // ---------------- todas as daqui ----------------
     /// <summary>Em paralelo: uma lâmpada dormindo não pode segurar as outras.</summary>
-    public static void Cada(Action<Lampada> acao)
+    public static void Cada(Action<Lampada> acao) => Cada(_aqui, acao);
+
+    public static void Cada(IReadOnlyList<Lampada> a, Action<Lampada> acao)
     {
-        var a = _aqui;
         if (a.Count == 1) { acao(a[0]); return; }
         Parallel.ForEach(a, l =>
         {
@@ -509,23 +605,22 @@ public static class Lamp
     }
 
     /// <summary>O estado que o painel mostra: o da lâmpada, se só há uma, ou o resumo de todas as daqui.</summary>
-    public static Lampada.State Cur
+    public static Lampada.State Cur => Resumo(_aqui);
+
+    /// <summary>O resumo de um grupo de lâmpadas: as daqui, ou as marcadas no painel.</summary>
+    public static Lampada.State Resumo(IReadOnlyList<Lampada> a)
     {
-        get
-        {
-            var a = _aqui;
-            if (a.Count == 1) return a[0].Cur;
-            var s = new Lampada.State { Online = false, Busy = _grupoBusy };
-            if (a.Count == 0) return s;
-            // a referência é uma lâmpada acesa: é o brilho dela que faz sentido mostrar no controle de "todas"
-            var r = a.FirstOrDefault(l => l.Cur.On && l.Cur.Online) ?? a.FirstOrDefault(l => l.Cur.Online) ?? a[0];
-            s.On = a.Any(l => l.Cur.On && l.Cur.Online);
-            s.Online = a.Any(l => l.Cur.Online);
-            s.Busy |= a.Any(l => l.Cur.Busy);
-            (s.B, s.T, s.Mode, s.H, s.S) = (r.Cur.B, r.Cur.T, r.Cur.Mode, r.Cur.H, r.Cur.S);
-            (s.Timer, s.TimerAt, s.TimerOpt) = (r.Cur.Timer, r.Cur.TimerAt, r.Cur.TimerOpt);
-            return s;
-        }
+        if (a.Count == 1) return a[0].Cur;
+        var s = new Lampada.State { Online = false, Busy = _grupoBusy };
+        if (a.Count == 0) return s;
+        // a referência é uma lâmpada acesa: é o brilho dela que faz sentido mostrar no controle do grupo
+        var r = a.FirstOrDefault(l => l.Cur.On && l.Cur.Online) ?? a.FirstOrDefault(l => l.Cur.Online) ?? a[0];
+        s.On = a.Any(l => l.Cur.On && l.Cur.Online);
+        s.Online = a.Any(l => l.Cur.Online);
+        s.Busy |= a.Any(l => l.Cur.Busy);
+        (s.B, s.T, s.Mode, s.H, s.S) = (r.Cur.B, r.Cur.T, r.Cur.Mode, r.Cur.H, r.Cur.S);
+        (s.Timer, s.TimerAt, s.TimerOpt) = (r.Cur.Timer, r.Cur.TimerAt, r.Cur.TimerOpt);
+        return s;
     }
 
     public static string? ConfigProblem
@@ -567,7 +662,9 @@ public static class Lamp
 
     public static void SetTimer(int minutes) => Cada(l => l.SetTimer(minutes));
 
-    public static int TimerLeft() => _aqui.Select(l => l.TimerLeft()).DefaultIfEmpty(0).Max();
+    public static int TimerLeft() => TimerLeft(_aqui);
+
+    public static int TimerLeft(IReadOnlyList<Lampada> a) => a.Select(l => l.TimerLeft()).DefaultIfEmpty(0).Max();
 
     public static string FmtLeft(int secs)
     {
@@ -575,9 +672,10 @@ public static class Lamp
         return m < 60 ? $"{m} min" : $"{m / 60} h {m % 60:00}";
     }
 
-    public static void WithBusy(Action fn)
+    public static void WithBusy(Action fn) => WithBusy(_aqui, fn);
+
+    private static void WithBusy(IReadOnlyList<Lampada> a, Action fn)
     {
-        var a = _aqui;
         if (a.Count == 1) { a[0].WithBusy(fn); return; }
         if (!GrupoLock.Wait(0)) return;
         _grupoBusy = true;
@@ -591,21 +689,26 @@ public static class Lamp
         }
     }
 
-    /// <summary>Com alguma acesa, apaga todas; com todas apagadas, liga todas.</summary>
-    public static void TogglePower()
+    public static void TogglePower() => TogglePower(_aqui);
+
+    /// <summary>Com alguma acesa, apaga todas do grupo; com todas apagadas, liga todas.</summary>
+    public static void TogglePower(IReadOnlyList<Lampada> a)
     {
-        var a = _aqui;
         if (a.Count == 1) { a[0].TogglePower(); return; }
-        WithBusy(() =>
+        WithBusy(a, () =>
         {
             // o cache de quem estava offline pode estar velho: relê antes de decidir
-            Cada(l => { if (!l.Cur.Online) l.RefreshState(rapido: true); });
-            if (a.Any(l => l.Cur.On && l.Cur.Online)) Cada(l => { if (l.Cur.Online) l.PowerOff(); });
-            else Cada(l => l.PowerOn());
+            Cada(a, l => { if (!l.Cur.Online) l.RefreshState(rapido: true); });
+            if (a.Any(l => l.Cur.On && l.Cur.Online)) Cada(a, l => { if (l.Cur.Online) l.PowerOff(); });
+            else Cada(a, l => l.PowerOn());
         });
     }
 
-    public static void PresetOn(int b, int t) => WithBusy(() => PowerOn(b, t));
+    public static void PresetOn(int b, int t) => PresetOn(_aqui, b, t);
+
+    public static void PresetOn(IReadOnlyList<Lampada> a, int b, int t) => WithBusy(a, () => Cada(a, l => l.PowerOn(b, t)));
+
+    public static void SetTimer(IReadOnlyList<Lampada> a, int minutes) => Cada(a, l => l.SetTimer(minutes));
 
     // ---------------- tela de configurações ----------------
     /// <summary>O que a tela mostra. A chave nunca sai daqui: só se ela já existe.</summary>

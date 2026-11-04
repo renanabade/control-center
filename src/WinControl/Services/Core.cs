@@ -8,8 +8,6 @@ namespace WinControl.Services;
 /// </summary>
 public static class Core
 {
-    private static readonly Dictionary<Lampada, string> Pendentes = [];
-    private static readonly AutoResetEvent SendEvent = new(false);
     private static readonly AutoResetEvent Poke = new(false);
     private static DateTime _userAt = DateTime.MinValue;
 
@@ -29,70 +27,47 @@ public static class Core
     private static void Send(string kind, IEnumerable<Lampada> alvos)
     {
         Touch();
-        lock (Pendentes) foreach (var l in alvos) Pendentes[l] = kind;
-        SendEvent.Set();
+        foreach (var l in alvos) l.Enviar(kind);
     }
 
-    private static void SendWorker()
-    {
-        while (true)
-        {
-            SendEvent.WaitOne();
-            try
-            {
-                KeyValuePair<Lampada, string>[] fila;
-                lock (Pendentes)
-                {
-                    fila = Pendentes.ToArray();
-                    Pendentes.Clear();
-                }
-                Parallel.ForEach(fila, p =>
-                {
-                    var c = p.Key.Cur;
-                    if (p.Value == "c" || (p.Value == "b" && c.Mode == "colour")) p.Key.ApplyColour(c.H, c.S, c.B);
-                    else p.Key.ApplyWhite(c.B, c.T);
-                });
-                if (fila.Any(p => !p.Key.Cur.Online)) Bus.Notify();
-            }
-            catch (Exception e) { Log.Write($"erro ao enviar para a lampada: {e.Message}"); }
-        }
-    }
+    /// <summary>As lâmpadas indicadas, ou todas as daqui quando nenhuma é indicada.</summary>
+    private static IReadOnlyList<Lampada> Alvos(IReadOnlyList<Lampada>? alvos) => alvos ?? Lamp.Aqui;
 
-    /// <summary>Uma lâmpada, ou todas as daqui quando nenhuma é indicada.</summary>
-    private static IReadOnlyList<Lampada> Alvos(Lampada? alvo) => alvo != null ? [alvo] : Lamp.Aqui;
-
-    public static void SetLampBrightness(int b, Lampada? alvo = null)
+    public static void SetLampBrightness(int b, IReadOnlyList<Lampada>? alvos = null)
     {
-        var a = Alvos(alvo);
+        var a = Alvos(alvos);
         foreach (var l in a) l.Cur.B = Math.Clamp(b, 1, 100);
-        Bus.Notify();
         Send("b", a);
+        Bus.Notify();
     }
 
-    public static void SetLampTemperature(int t, Lampada? alvo = null)
+    public static void SetLampTemperature(int t, IReadOnlyList<Lampada>? alvos = null)
     {
-        var a = Alvos(alvo);
+        var a = Alvos(alvos);
         foreach (var l in a) { l.Cur.T = Math.Clamp(t, 0, 100); l.Cur.Mode = "white"; }
-        Bus.Notify();
         Send("t", a);
-    }
-
-    public static void SetLampColour(int h, int s, Lampada? alvo = null)
-    {
-        var a = Alvos(alvo);
-        foreach (var l in a) { l.Cur.H = ((h % 360) + 360) % 360; l.Cur.S = Math.Clamp(s, 0, 1000); l.Cur.Mode = "colour"; }
         Bus.Notify();
-        Send("c", a);
     }
 
-    public static void SetLampMode(bool colour, Lampada? alvo = null)
+    public static void SetLampColour(int h, int s, IReadOnlyList<Lampada>? alvos = null)
+    {
+        var a = Alvos(alvos);
+        foreach (var l in a) { l.Cur.H = ((h % 360) + 360) % 360; l.Cur.S = Math.Clamp(s, 0, 1000); l.Cur.Mode = "colour"; }
+        Send("c", a);
+        Bus.Notify();
+    }
+
+    public static void SetLampMode(bool colour, IReadOnlyList<Lampada>? alvos = null)
     {
         // trocar de aba só muda o que é mostrado; a lâmpada muda quando o usuário mexer no controle
-        var a = Alvos(alvo);
+        var a = Alvos(alvos);
         foreach (var l in a) l.Cur.Mode = colour ? "colour" : "white";
-        Bus.Notify();
         Send(colour ? "c" : "t", a);
+        Bus.Notify();
     }
+
+    /// <summary>O usuário mexeu num controle agora há pouco: a tela não deve puxá-lo de volta para o estado lido.</summary>
+    public static bool UsuarioMexendo => (DateTime.UtcNow - _userAt).TotalSeconds < 2.5;
 
     // ---------------- telas ----------------
     public static void SetScreenBrightness(int v, string? key = null)
@@ -203,7 +178,6 @@ public static class Core
         DualSense.Start();
         Perifericos.Start();
         Screens.Start();
-        new Thread(SendWorker) { IsBackground = true, Name = "envio-lampada" }.Start();
         new Thread(NightWatcher) { IsBackground = true, Name = "luz-noturna" }.Start();
         new Thread(Poller) { IsBackground = true, Name = "lampada-poller" }.Start();
         Hotkeys.Start(() => { Theme.Toggle(); Conforto.Cena = null; Bus.Notify(); }, () => RotateFromHotkey?.Invoke());
