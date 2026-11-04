@@ -22,15 +22,33 @@ public static class Ui
         return $"{n} · {Kelvin(t)}K";
     }
 
+    /// <summary>Texto de todas as daqui. Com uma lâmpada só, é o texto dela.</summary>
     public static string LampStatus(bool withTimer = true)
     {
-        var c = Lamp.Cur;
+        if (Lamp.ConfigProblem is { } p) return p == "nenhuma lâmpada nesta rede" ? "Nenhuma nesta rede" : $"Não configurada ({p})";
+        return LampStatus(Lamp.Aqui, withTimer);
+    }
+
+    /// <summary>Texto de um grupo de lâmpadas: as daqui, ou as marcadas no painel.</summary>
+    public static string LampStatus(IReadOnlyList<Lampada> a, bool withTimer = true)
+    {
+        if (a.Count == 1) return LampStatus(a[0], withTimer);
+        if (a.Count == 0) return "Escolha uma ou mais lâmpadas";
+        if (Lamp.Resumo(a).Busy) return "Conectando…";
+        int ligadas = a.Count(l => l.Cur.On && l.Cur.Online), online = a.Count(l => l.Cur.Online);
+        if (online == 0) return a.Any(l => l.HasBle) ? "Dormindo (acordam pelo Bluetooth)" : "Sem conexão";
+        return ligadas == 0 ? $"{a.Count} apagadas" : $"{ligadas} de {a.Count} ligadas";
+    }
+
+    public static string LampStatus(Lampada l, bool withTimer = true)
+    {
+        var c = l.Cur;
         if (c.Busy) return "Conectando…";
-        if (Lamp.ConfigProblem is { } p) return $"Não configurada ({p})";
-        if (!c.Online) return Lamp.HasBle ? "Dormindo (acorda pelo Bluetooth)" : "Sem conexão";
+        if (l.ConfigProblem is { } p) return $"Não configurada ({p})";
+        if (!c.Online) return l.HasBle ? "Dormindo (acorda pelo Bluetooth)" : "Sem conexão";
         if (!c.On) return "Desligada";
         string s = $"Ligada · {c.B}% · " + (c.Mode == "colour" ? "cor" : $"{Kelvin(c.T)}K");
-        int left = Lamp.TimerLeft();
+        int left = l.TimerLeft();
         if (withTimer && left > 0) s += $" · desliga em {Lamp.FmtLeft(left)}";
         return s;
     }

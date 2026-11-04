@@ -31,11 +31,16 @@ public sealed record EstadoDualSense(
     string? Problema);
 
 public sealed record EstadoGeral(
+    /// <summary>Todas as lâmpadas da rede em que o PC está, resumidas. Os comandos da lâmpada valem para todas elas.</summary>
     EstadoLampada Lampada,
     IReadOnlyList<EstadoTela> Telas,
     EstadoAparencia Aparencia,
     EstadoDualSense DualSense,
-    string? CenaAtiva);
+    string? CenaAtiva,
+    /// <summary>Cada lâmpada da rede em que o PC está.</summary>
+    IReadOnlyList<ResumoLampada> Lampadas);
+
+public sealed record ResumoLampada(string Nome, bool Online, bool Ligada, int Brilho);
 
 public sealed record Cena(string Nome, string Resumo, bool Ativa);
 

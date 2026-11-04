@@ -22,6 +22,21 @@ public sealed class DispositivosTests
     }
 
     [Fact]
+    public async Task Estado_lista_cada_lampada_daqui()
+    {
+        await using var api = new ApiFactory();
+        var c = await api.ClienteLogadoAsync();
+
+        var estado = await c.GetFromJsonAsync<EstadoGeral>("/api/v1/estado", Ct);
+        var lampada = Assert.Single(estado!.Lampadas);
+        Assert.False(lampada.Ligada);
+
+        await c.PutAsJsonAsync($"{Lampada}/energia", new AjusteEnergia(true), Ct);
+        estado = await c.GetFromJsonAsync<EstadoGeral>("/api/v1/estado", Ct);
+        Assert.True(Assert.Single(estado!.Lampadas).Ligada);
+    }
+
+    [Fact]
     public async Task Cena_com_lampada_apagada_nao_acende_e_vale_para_um_ligar()
     {
         await using var api = new ApiFactory();

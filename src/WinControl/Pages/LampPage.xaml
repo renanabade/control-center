@@ -7,6 +7,7 @@
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
@@ -18,7 +19,7 @@
                     <FontIcon Glyph="&#xE76B;" FontSize="12" />
                 </Button>
                 <StackPanel VerticalAlignment="Center">
-                    <TextBlock Text="Lâmpada" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock x:Name="Titulo" Text="Lâmpada" Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock x:Name="Status" Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
@@ -27,7 +28,10 @@
                           Toggled="Power_Toggled" />
         </Grid>
 
-        <Grid x:Name="Body" Grid.Row="1" Padding="20,4,20,16" ColumnSpacing="28">
+        <!-- com várias neste lugar: o nome marca quais os controles abaixo ajustam, o ícone liga ou apaga aquela na hora -->
+        <Grid x:Name="Chips" Grid.Row="1" Padding="20,0,20,8" ColumnSpacing="6" RowSpacing="6" Visibility="Collapsed" />
+
+        <Grid x:Name="Body" Grid.Row="2" Padding="20,4,20,12" ColumnSpacing="28">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition />

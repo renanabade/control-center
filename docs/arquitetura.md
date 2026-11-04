@@ -14,9 +14,10 @@ src/WinControl/
   SelfTest.cs          teste sem interface contra o hardware real
   Services/
     Common.cs          AppPaths (%APPDATA%\win-control), Log, Bus (aviso de "algo mudou")
-    Core.cs            threads de fundo: envio coalescido p/ lâmpada, poller, vigia da Luz Noturna, autostart
-    Lamp.cs            estado e comandos da lâmpada (DPs Tuya), fallback Bluetooth, redescoberta de IP
-    Tuya.cs            protocolo local Tuya 3.3 (TCP 6668, AES-ECB) e descoberta UDP (6666/6667)
+    Core.cs            controles da lâmpada, poller, vigia da Luz Noturna, autostart
+    Lamp.cs            Lampada (estado e comandos de uma, fallback Bluetooth) e Lamp (quais moram nesta rede, comandos de todas as daqui)
+    Rede.cs            em que lugar o PC está, pelo MAC do roteador
+    Tuya.cs            protocolo local Tuya 3.3 (TCP 6668, AES-ECB) e 3.5 (AES-GCM, chave por conexão); avisos UDP (6666/6667)
     Ble.cs             protocolo Tuya BLE (GATT 2b10/2b11, AES-CBC, chave de sessão) para acordar a lâmpada
     Conforto.cs        cenas, agenda, conforto.json
     Theme.cs           tema claro/escuro e Luz Noturna (registro + broadcast, aviso de mudança na chave)
@@ -38,9 +39,11 @@ tools/
 ## Fluxo de dados
 
 - Quem muda algo chama `Bus.Notify()`. O painel e a bandeja assinam e se redesenham.
-- O **poller** lê a lâmpada a cada 3 s com o painel aberto e a cada 30 s com ele fechado.
-- Os sliders não falam direto com a lâmpada. Eles marcam o pedido e o **envio coalescido** (`Core.SendWorker`)
-  manda só o último valor.
+- O **poller** lê as lâmpadas desta rede a cada 3 s com o painel aberto e a cada 30 s com ele fechado, em paralelo.
+- `Lamp.*` significa "todas as lâmpadas daqui". Com uma só, cai direto nela, sem nenhuma diferença de comportamento.
+- Os sliders e a roda de cores não falam direto com a lâmpada. Cada `Lampada` tem a própria **fila de envio**
+  (`Lampada.Enviar`): uma lenta não segura as outras, só o último valor é mandado, e ele é repetido se falhar. Enquanto há
+  envio em andamento, e por 1,5 s depois, o poller não sobrescreve o estado com o que leu.
 - O painel só existe enquanto é usado: `App.OpenPanel` cria a janela e ela é fechada 3 min depois de escondida.
 - O resto reage a eventos do Windows em vez de consultar em laço: Luz Noturna (`RegNotifyChangeKeyValue`), jogo em
   primeiro plano (`SetWinEventHook`), aparelhos HID entrando ou saindo. Detalhes e medições: [desempenho.md](desempenho.md).
@@ -68,6 +71,7 @@ tools/
 | `--selftest` | Lê lâmpada, telas, tema, projeção e agenda e grava `selftest.txt` na pasta de config. |
 | `--selftest-write` | Também liga, muda e restaura a lâmpada. |
 | `--selftest-scenes` | Testa as regras de cena da lâmpada. |
+| `--selftest-rajada` | Reenvia às lâmpadas acesas o valor que elas já têm, em rajada, e mede quantos envios foram feitos e quantos falharam. Não muda nada visível. |
 | `--selftest-theme` | Troca o tema e volta. |
 
 ## Compilar e testar

@@ -8,8 +8,6 @@ namespace WinControl.Services;
 /// </summary>
 public static class Core
 {
-    private static string? _pendingKind;
-    private static readonly AutoResetEvent SendEvent = new(false);
     private static readonly AutoResetEvent Poke = new(false);
     private static DateTime _userAt = DateTime.MinValue;
 
@@ -26,47 +24,50 @@ public static class Core
     }
 
     // ---------------- lâmpada: envio ----------------
-    private static void Send(string kind)
+    private static void Send(string kind, IEnumerable<Lampada> alvos)
     {
         Touch();
-        _pendingKind = kind;
-        SendEvent.Set();
+        foreach (var l in alvos) l.Enviar(kind);
     }
 
-    private static void SendWorker()
+    /// <summary>As lâmpadas indicadas, ou todas as daqui quando nenhuma é indicada.</summary>
+    private static IReadOnlyList<Lampada> Alvos(IReadOnlyList<Lampada>? alvos) => alvos ?? Lamp.Aqui;
+
+    public static void SetLampBrightness(int b, IReadOnlyList<Lampada>? alvos = null)
     {
-        while (true)
-        {
-            SendEvent.WaitOne();
-            try
-            {
-                var kind = _pendingKind;
-                var c = Lamp.Cur;
-                if (kind == "c" || (kind == "b" && c.Mode == "colour")) Lamp.ApplyColour(c.H, c.S, c.B);
-                else Lamp.ApplyWhite(c.B, c.T);
-                if (!c.Online) Bus.Notify();
-            }
-            catch (Exception e) { Log.Write($"erro ao enviar para a lampada: {e.Message}"); }
-        }
+        var a = Alvos(alvos);
+        foreach (var l in a) l.Cur.B = Math.Clamp(b, 1, 100);
+        Send("b", a);
+        Bus.Notify();
     }
 
-    public static void SetLampBrightness(int b) { Lamp.Cur.B = Math.Clamp(b, 1, 100); Bus.Notify(); Send("b"); }
-
-    public static void SetLampTemperature(int t) { Lamp.Cur.T = Math.Clamp(t, 0, 100); Lamp.Cur.Mode = "white"; Bus.Notify(); Send("t"); }
-
-    public static void SetLampColour(int h, int s)
+    public static void SetLampTemperature(int t, IReadOnlyList<Lampada>? alvos = null)
     {
-        Lamp.Cur.H = ((h % 360) + 360) % 360; Lamp.Cur.S = Math.Clamp(s, 0, 1000); Lamp.Cur.Mode = "colour";
-        Bus.Notify(); Send("c");
+        var a = Alvos(alvos);
+        foreach (var l in a) { l.Cur.T = Math.Clamp(t, 0, 100); l.Cur.Mode = "white"; }
+        Send("t", a);
+        Bus.Notify();
     }
 
-    public static void SetLampMode(bool colour)
+    public static void SetLampColour(int h, int s, IReadOnlyList<Lampada>? alvos = null)
+    {
+        var a = Alvos(alvos);
+        foreach (var l in a) { l.Cur.H = ((h % 360) + 360) % 360; l.Cur.S = Math.Clamp(s, 0, 1000); l.Cur.Mode = "colour"; }
+        Send("c", a);
+        Bus.Notify();
+    }
+
+    public static void SetLampMode(bool colour, IReadOnlyList<Lampada>? alvos = null)
     {
         // trocar de aba só muda o que é mostrado; a lâmpada muda quando o usuário mexer no controle
-        Lamp.Cur.Mode = colour ? "colour" : "white";
+        var a = Alvos(alvos);
+        foreach (var l in a) l.Cur.Mode = colour ? "colour" : "white";
+        Send(colour ? "c" : "t", a);
         Bus.Notify();
-        Send(colour ? "c" : "t");
     }
+
+    /// <summary>O usuário mexeu num controle agora há pouco: a tela não deve puxá-lo de volta para o estado lido.</summary>
+    public static bool UsuarioMexendo => (DateTime.UtcNow - _userAt).TotalSeconds < 2.5;
 
     // ---------------- telas ----------------
     public static void SetScreenBrightness(int v, string? key = null)
@@ -140,13 +141,10 @@ public static class Core
         }
     }
 
-    private static (bool, bool, int, int, string, int, int) Snapshot()
-    {
-        var c = Lamp.Cur;
-        return (c.On, c.Online, c.B, c.T, c.Mode, c.H, c.S);
-    }
+    private static string Snapshot() =>
+        string.Join("|", Lamp.Aqui.Select(l => { var c = l.Cur; return $"{l.Id}:{c.On}:{c.Online}:{c.B}:{c.T}:{c.Mode}:{c.H}:{c.S}"; }));
 
-    /// <summary>Mantém a lâmpada em dia: a cada 3 s com o painel aberto, a cada 30 s com ele fechado.</summary>
+    /// <summary>Mantém as lâmpadas daqui em dia: a cada 3 s com o painel aberto, a cada 30 s com ele fechado.</summary>
     private static void Poller()
     {
         Thread.Sleep(1000);
@@ -159,7 +157,8 @@ public static class Core
                 if (!busy)
                 {
                     var before = Snapshot();
-                    if (!Lamp.RefreshState()) Lamp.Rediscover();
+                    Lamp.RefreshState();
+                    Lamp.ProcurarSemIp();
                     if (PanelOpen || before != Snapshot()) Bus.Notify();
                 }
                 wait = busy ? 1 : PanelOpen ? (Lamp.Cur.Online ? 3 : 5) : 30;
@@ -179,7 +178,6 @@ public static class Core
         DualSense.Start();
         Perifericos.Start();
         Screens.Start();
-        new Thread(SendWorker) { IsBackground = true, Name = "envio-lampada" }.Start();
         new Thread(NightWatcher) { IsBackground = true, Name = "luz-noturna" }.Start();
         new Thread(Poller) { IsBackground = true, Name = "lampada-poller" }.Start();
         Hotkeys.Start(() => { Theme.Toggle(); Conforto.Cena = null; Bus.Notify(); }, () => RotateFromHotkey?.Invoke());

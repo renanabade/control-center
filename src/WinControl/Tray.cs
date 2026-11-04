@@ -104,7 +104,12 @@ public sealed class Tray : IDisposable
         bool usable = c.On && c.Online;
 
         _menu.Items.Add(Item($"Lâmpada: {Ui.LampStatus()}", null, enabled: false));
-        _menu.Items.Add(Item("Ligar / Desligar lâmpada", Lamp.TogglePower));
+        var aqui = Lamp.Aqui;
+        _menu.Items.Add(Item(aqui.Count > 1 ? "Ligar / Desligar todas" : "Ligar / Desligar lâmpada", Lamp.TogglePower));
+        // com várias neste lugar, cada uma também tem o seu liga/desliga
+        if (aqui.Count > 1)
+            foreach (var l in aqui)
+                _menu.Items.Add(Item(l.Nome, l.TogglePower, check: l.Cur.On && l.Cur.Online));
         _menu.Items.Add(new WF.ToolStripSeparator());
 
         var cenas = new WF.ToolStripMenuItem("Cenas");

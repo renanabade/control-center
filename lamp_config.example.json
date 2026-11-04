@@ -1,7 +1,12 @@
 ﻿{
-  "id": "SEU_DEVICE_ID",
-  "ip": "",
-  "local_key": "SUA_LOCAL_KEY",
-  "version": 3.3,
-  "ble_mac": ""
+  "lampadas": [
+    {
+      "id": "SEU_DEVICE_ID",
+      "nome": "Sala",
+      "ip": "",
+      "local_key": "SUA_LOCAL_KEY",
+      "version": 3.3,
+      "ble_mac": ""
+    }
+  ]
 }

@@ -17,6 +17,7 @@ public sealed partial class PanelWindow : Window
     private const int WidthDip = 640;
     private const int HeightDip = 410;
     private const int MarginDip = 12;
+    private int _alturaExtra;
     private bool _wasActive;
     private DateTime _shownAt;
     private readonly DispatcherTimer _focusWatch = new() { Interval = TimeSpan.FromMilliseconds(200) };
@@ -88,10 +89,7 @@ public sealed partial class PanelWindow : Window
         ApplyTheme();
         while (Nav.CanGoBack) Nav.GoBack();
         if (Nav.Content == null) Nav.Navigate(typeof(MainPage));   // reaberto no meio da soltura
-        var area = DisplayArea.Primary.WorkArea;
-        double scale = GetDpiScale();
-        int w = (int)(WidthDip * scale), h = (int)(HeightDip * scale), m = (int)(MarginDip * scale);
-        AppWindow.MoveAndResize(new RectInt32(area.X + area.Width - w - m, area.Y + area.Height - h - m, w, h));
+        Posicionar();
         _wasActive = false;
         AppWindow.Show();
         Activate();
@@ -103,6 +101,22 @@ public sealed partial class PanelWindow : Window
         Core.PokePoller();          // lê a lâmpada agora, em vez de esperar o próximo ciclo
         Screens.Refresh();
         Bus.Notify();
+    }
+
+    private void Posicionar()
+    {
+        var area = DisplayArea.Primary.WorkArea;
+        double scale = GetDpiScale();
+        int w = (int)(WidthDip * scale), h = (int)((HeightDip + _alturaExtra) * scale), m = (int)(MarginDip * scale);
+        AppWindow.MoveAndResize(new RectInt32(area.X + area.Width - w - m, area.Y + area.Height - h - m, w, h));
+    }
+
+    /// <summary>A página que precisa de mais espaço pede enquanto está aberta. Cresce para cima: o canto do relógio não muda.</summary>
+    public void AjustarAltura(int extraDip)
+    {
+        if (_alturaExtra == extraDip) return;
+        _alturaExtra = extraDip;
+        if (IsShown) Posicionar();
     }
 
     /// <summary>

@@ -77,7 +77,8 @@ public sealed class PonteSimulada : IPonte
     private List<EstadoTela> Telas() =>
         _telas.Select(t => new EstadoTela(t.Key, "simulada", true, t.Value)).ToList();
 
-    private EstadoGeral Estado() => new(Lampada(), Telas(), new EstadoAparencia(_tema, _luzNoturna), _dualSense, _cenaAtiva);
+    private EstadoGeral Estado() => new(Lampada(), Telas(), new EstadoAparencia(_tema, _luzNoturna), _dualSense, _cenaAtiva,
+        [new ResumoLampada("Lâmpada Simulada", true, _ligada, _brilho)]);
 
     private ResultadoCena AplicarCena(string nome)
     {

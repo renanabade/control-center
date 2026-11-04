@@ -185,7 +185,8 @@ public static class ApiBridge
     }
 
     private static EstadoGeral Estado() =>
-        new(EstadoDaLampada(), EstadoDasTelas(), EstadoDaAparencia(), EstadoDoDualSense(), Conforto.Cena);
+        new(EstadoDaLampada(), EstadoDasTelas(), EstadoDaAparencia(), EstadoDoDualSense(), Conforto.Cena,
+            Lamp.Aqui.Select(l => new ResumoLampada(l.Nome, l.Cur.Online, l.Cur.On && l.Cur.Online, l.Cur.B)).ToList());
 
     private static List<Cena> ListarCenas() => Conforto.Cenas.OfType<System.Text.Json.Nodes.JsonObject>()
         .Where(c => c["nome"] != null)
