@@ -7,3 +7,10 @@ __pycache__/
 lamp_config.json
 session.json
 devices_keys.json
+# segredos e dados da API
+.env
+api.settings.json
+.dev-dados/
+*.db
+*.db-shm
+*.db-wal

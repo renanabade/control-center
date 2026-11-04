@@ -11,3 +11,5 @@
 - Regras das cenas (não mudar sem o usuário pedir): cena/agenda nunca acende lâmpada apagada; o ajuste da cena vale
   para um único "ligar"; ligar sem cena pendente mantém o último estado da lâmpada. Ver README.
 - Teste rápido sem interface: `WinControl.exe --selftest` grava `selftest.txt` na pasta de config.
+- API: `dotnet test --project tests\ControlCenter.Api.Tests` (sem hardware). Ela só alcança os aparelhos pelo pipe do
+  app da bandeja (`ApiBridge.cs`); comandos novos entram lá e na `PonteSimulada`. Veja `docs/api.md`.

@@ -32,6 +32,13 @@ instante em que o processo abre. Um jogo que já estava aberto antes do app tamb
   3h30 aberto e o "agora" com o app recém-aberto.
 - Painel: abre, fecha com Esc e, 3 min depois, a janela é destruída sem o app sair.
 
+## Com controle virtual ativo (medido em 03/11/2026)
+- Os 0,2% acima valem **sem controle virtual**. Com o DualSense por Bluetooth emulando PS4, o processo ficou em **2–4%**
+  de um núcleo, quase tudo em uma única thread: é o custo esperado de ler cerca de 250 relatórios/s para repassar ao
+  controle virtual. Nessa medição o processo tinha 96 MB de memória privada.
+- A ponte da API (`ApiBridge`) só espera conexão, sem thread própria parada. Falta repetir a medição de 0,2% com ela,
+  sem controle virtual.
+
 ## Pendente
 - **Soltar o painel não devolveu memória**: depois do fechamento a memória privada seguiu em cerca de 97 MB. O
   `Microsoft.UI.Xaml.dll` continua carregado e o framework XAML segura os recursos dele. O ganho real está na CPU (as

@@ -1,0 +1,10 @@
+**/bin/
+**/obj/
+**/.dev-dados/
+.git/
+.github/
+.env
+docs/
+tests/
+tools/
+src/WinControl/

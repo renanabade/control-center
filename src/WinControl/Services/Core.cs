@@ -183,6 +183,7 @@ public static class Core
         new Thread(NightWatcher) { IsBackground = true, Name = "luz-noturna" }.Start();
         new Thread(Poller) { IsBackground = true, Name = "lampada-poller" }.Start();
         Hotkeys.Start(() => { Theme.Toggle(); Conforto.Cena = null; Bus.Notify(); }, () => RotateFromHotkey?.Invoke());
+        ApiBridge.Start();
         Log.Write("control-center iniciado");
     }
 
