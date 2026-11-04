@@ -41,7 +41,7 @@ public sealed partial class SettingsWindow : Window
 
     public void Mostrar(string aba)
     {
-        Abas.SelectedItem = aba switch { "lampada" => AbaLampada, "api" => AbaApi, _ => AbaGeral };
+        Abas.SelectedItem = aba switch { "lampada" => AbaLampada, "cenas" => AbaCenas, "aparelhos" => AbaAparelhos, "api" => AbaApi, _ => AbaGeral };
         Activate();
         SetForegroundWindow(Win32Interop.GetWindowFromWindowId(AppWindow.Id));
     }
@@ -51,6 +51,8 @@ public sealed partial class SettingsWindow : Window
         var pagina = (args.SelectedItem as NavigationViewItem)?.Tag as string switch
         {
             "lampada" => typeof(ConfigLampadaPage),
+            "cenas" => typeof(ConfigCenasPage),
+            "aparelhos" => typeof(ConfigAparelhosPage),
             "api" => typeof(ConfigApiPage),
             _ => typeof(ConfigGeralPage),
         };

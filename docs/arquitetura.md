@@ -10,7 +10,7 @@ src/WinControl/
   SettingsWindow.xaml.cs  janela de configurações: normal, porque o painel some ao perder o foco
   Tray.cs              ícone e menu da bandeja (WinForms NotifyIcon)
   Pages/               MainPage (blocos, cenas, brilho), LampPage, ProjectPage, DualSensePage, PerifericosPage;
-                       ConfigGeralPage, ConfigLampadaPage e ConfigApiPage (abas das configurações)
+                       ConfigGeralPage, ConfigLampadaPage, ConfigCenasPage, ConfigAparelhosPage e ConfigApiPage (abas das configurações)
   SelfTest.cs          teste sem interface contra o hardware real
   Services/
     Common.cs          AppPaths (%APPDATA%\win-control), Log, Bus (aviso de "algo mudou")
@@ -67,7 +67,7 @@ tools/
 | `--background` | Inicia sem abrir o painel (é o que o "Iniciar com o Windows" usa). |
 | `--show` | Abre o painel ao iniciar. |
 | `--page=lamp` / `--page=project` / `--page=dualsense` / `--page=perifericos` | Abre direto numa subpágina (para desenvolvimento). |
-| `--page=config` / `--page=config-lampada` / `--page=config-api` | Abre direto numa aba das configurações (para desenvolvimento). |
+| `--page=config` / `--page=config-lampada` / `--page=config-cenas` / `--page=config-aparelhos` / `--page=config-api` | Abre direto numa aba das configurações (para desenvolvimento). |
 | `--selftest` | Lê lâmpada, telas, tema, projeção e agenda e grava `selftest.txt` na pasta de config. |
 | `--selftest-write` | Também liga, muda e restaura a lâmpada. |
 | `--selftest-scenes` | Testa as regras de cena da lâmpada. |

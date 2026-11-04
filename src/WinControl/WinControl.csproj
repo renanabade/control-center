@@ -6,7 +6,7 @@
     <TargetPlatformMinVersion>10.0.22621.0</TargetPlatformMinVersion>
     <RootNamespace>WinControl</RootNamespace>
     <AssemblyName>WinControl</AssemblyName>
-    <Version>1.0.1</Version>
+    <Version>1.1.0</Version>
     <Platforms>x64</Platforms>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
     <UseWinUI>true</UseWinUI>

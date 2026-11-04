@@ -88,7 +88,7 @@
             <StackPanel Grid.Column="1" Spacing="18">
                 <StackPanel Spacing="6">
                     <TextBlock Text="Predefinições" />
-                    <Grid ColumnSpacing="8" RowSpacing="8">
+                    <Grid x:Name="Presets" ColumnSpacing="8" RowSpacing="8">
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition />
                             <ColumnDefinition />

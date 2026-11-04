@@ -105,6 +105,8 @@ da Redragon (feche-os, senão eles brigam pela cor):
 - **Razer DeathAdder V2** (`1532:0084`): logo e roda, protocolo Chroma (relatório de recurso de 90 bytes).
 - **Redragon Kumara V2** (`320F:5000`) e **Kumara Pro** (mesmo fabricante do chip, EVision, reconhecido pelo nome do
   produto, por USB): modo estático, relatório 0x04 na interface 1. O Pro ainda não foi testado com o aparelho na mão.
+- **Outro modelo de mesmo protocolo:** adicione o identificador em **Configurações → Aparelhos**. Teclado EVision:
+  `320F:5000`. Mouse Razer: `1532:0084:3F`, em que o último valor é o *transaction id* do modelo.
 - **Outros aparelhos:** ficam com a **Iluminação Dinâmica do Windows** (Configurações → Personalização). O painel mostra
   os que encontrar e abre essa tela. A cor é escolhida lá porque, sem ser um app empacotado, o control-center só
   controlaria a luz deles enquanto estivesse em primeiro plano, e ela voltaria ao fechar o painel.

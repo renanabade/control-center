@@ -65,7 +65,26 @@ public static class Perifericos
     {
         public Aparelho Mouse { get; set; } = new();
         public Aparelho Teclado { get; set; } = new();
+        /// <summary>Outros mouses Razer de mesmo protocolo: "1532:0084:3F" (fabricante, produto e transaction id, em hexa).</summary>
+        public List<string> MousesExtras { get; set; } = new();
+        /// <summary>Outros teclados de chip EVision: "320F:5000" (fabricante e produto, em hexa).</summary>
+        public List<string> TecladosExtras { get; set; } = new();
     }
+
+    public static bool IdValido(string id, bool comTransacao) =>
+        System.Text.RegularExpressions.Regex.IsMatch(id, comTransacao ? "^[0-9A-Fa-f]{4}:[0-9A-Fa-f]{4}:[0-9A-Fa-f]{2}$" : "^[0-9A-Fa-f]{4}:[0-9A-Fa-f]{4}$");
+
+    private static int Hexa(string s) => Convert.ToInt32(s, 16);
+
+    private static string NomeDe(HidDevice d, string padrao)
+    {
+        try { return d.GetProductName() is { Length: > 0 } n ? n : padrao; }
+        catch (Exception) { return padrao; }   // alguns aparelhos não deixam ler o nome
+    }
+
+    /// <summary>O nome que o próprio aparelho informa, para a página mostrar o que achou.</summary>
+    public static string NomeMouse { get; private set; } = "Mouse";
+    public static string NomeTeclado { get; private set; } = "Teclado";
 
     public static Config Cfg { get; private set; } = new();
     public static bool MouseOk { get; private set; }
@@ -199,14 +218,25 @@ public static class Perifericos
     // ---------------- Razer DeathAdder V2: relatório de recurso de 90 bytes ----------------
     private static class Razer
     {
-        private const int Vid = 0x1532, Pid = 0x0084;
+        private const string Padrao = "1532:0084:3F";   // DeathAdder V2
         private const byte LedRoda = 0x01, LedLogo = 0x04;
         private static bool _logged;
 
+        private static (HidDevice dev, byte transacao)? Find()
+        {
+            foreach (var id in Cfg.MousesExtras.Prepend(Padrao).Where(i => IdValido(i, comTransacao: true)))
+            {
+                var p = id.Split(':');
+                var dev = DeviceList.Local.GetHidDevices(Hexa(p[0]), Hexa(p[1])).FirstOrDefault(d => d.GetMaxFeatureReportLength() >= 91);
+                if (dev != null) return (dev, (byte)Hexa(p[2]));
+            }
+            return null;
+        }
+
         public static bool SetColor((byte r, byte g, byte b) c)
         {
-            var dev = DeviceList.Local.GetHidDevices(Vid, Pid).FirstOrDefault(d => d.GetMaxFeatureReportLength() >= 91);
-            if (dev == null) { LogOnce("mouse Razer não encontrado"); return false; }
+            if (Find() is not var (dev, transacao)) { LogOnce("mouse Razer não encontrado"); return false; }
+            NomeMouse = NomeDe(dev, "Mouse Razer");
             // a interface 0 também é a do cursor: o Windows não deixa abrir para leitura/escrita, mas relatórios de
             // recurso funcionam num handle sem acesso nenhum
             using var h = CreateFile(dev.DevicePath, 0, 3, IntPtr.Zero, 3, 0, IntPtr.Zero);
@@ -214,7 +244,7 @@ public static class Perifericos
             foreach (var led in new[] { LedLogo, LedRoda })
             {
                 // classe 0x0F / 0x02: efeito na matriz estendida; 0x01 = estático, uma cor
-                if (!Send(h, 0x0F, 0x02, new byte[] { 0x01, led, 0x01, 0x00, 0x00, 0x01, c.r, c.g, c.b }))
+                if (!Send(h, transacao, 0x0F, 0x02, new byte[] { 0x01, led, 0x01, 0x00, 0x00, 0x01, c.r, c.g, c.b }))
                 {
                     LogOnce($"mouse Razer recusou o comando (erro {Marshal.GetLastWin32Error()})");
                     return false;
@@ -230,10 +260,10 @@ public static class Perifericos
         [DllImport("hid.dll", SetLastError = true)]
         private static extern bool HidD_SetFeature(SafeFileHandle h, byte[] buf, int len);
 
-        private static bool Send(SafeFileHandle h, byte cls, byte id, byte[] args)
+        private static bool Send(SafeFileHandle h, byte transacao, byte cls, byte id, byte[] args)
         {
             var buf = new byte[91];   // byte 0 é o id do relatório (0)
-            buf[2] = 0x3F;            // transaction id do DeathAdder V2
+            buf[2] = transacao;       // cada modelo da Razer espera o seu
             buf[6] = (byte)args.Length;
             buf[7] = cls;
             buf[8] = id;
@@ -296,9 +326,17 @@ public static class Perifericos
         }
 
         // 320F:5000 é o do Kumara V2. O do Pro não está documentado: pelo fabricante do chip, ele é reconhecido pelo nome
-        private static HidDevice? Find() => DeviceList.Local.GetHidDevices(Vid)
-            .FirstOrDefault(d => (d.ProductID == Pid || EhKumara(d)) && d.GetMaxOutputReportLength() == 64
-                                 && d.DevicePath.Contains("mi_01", StringComparison.OrdinalIgnoreCase));
+        private static HidDevice? Find()
+        {
+            var extras = Cfg.TecladosExtras.Where(i => IdValido(i, comTransacao: false)).Select(i => i.Split(':'))
+                .Select(p => (Hexa(p[0]), Hexa(p[1]))).ToHashSet();
+            var dev = DeviceList.Local.GetHidDevices()
+                .FirstOrDefault(d => ((d.VendorID == Vid && (d.ProductID == Pid || EhKumara(d))) || extras.Contains((d.VendorID, d.ProductID)))
+                                     && d.GetMaxOutputReportLength() == 64
+                                     && d.DevicePath.Contains("mi_01", StringComparison.OrdinalIgnoreCase));
+            if (dev != null) NomeTeclado = NomeDe(dev, "Teclado");
+            return dev;
+        }
 
         private static bool EhKumara(HidDevice d)
         {

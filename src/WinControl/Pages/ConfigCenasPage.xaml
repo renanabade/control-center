@@ -1,0 +1,94 @@
+<Page
+    x:Class="WinControl.Pages.ConfigCenasPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+
+    <ScrollViewer>
+        <StackPanel Padding="28,24" Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
+            <TextBlock Text="Cenas e agenda" Style="{StaticResource SubtitleTextBlockStyle}" />
+            <InfoBar x:Name="Aviso" IsClosable="True" />
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Cenas" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Uma cena nunca acende uma lâmpada apagada: o ajuste fica combinado para o próximo ligar. O painel mostra as 4 primeiras." />
+                    <Grid ColumnSpacing="8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ComboBox x:Name="ListaCenas" Header="Cena" HorizontalAlignment="Stretch" SelectionChanged="ListaCenas_SelectionChanged" />
+                        <Button Grid.Column="1" Content="Nova" VerticalAlignment="Bottom" Click="NovaCena_Click" />
+                        <Button x:Name="RemoverCena" Grid.Column="2" Content="Remover" VerticalAlignment="Bottom" Click="RemoverCena_Click" />
+                    </Grid>
+                    <TextBox x:Name="NomeCena" Header="Nome" />
+                    <ComboBox x:Name="LampadaModo" Header="Lâmpadas" MinWidth="320" SelectionChanged="LampadaModo_SelectionChanged">
+                        <ComboBoxItem Content="Não mexer" />
+                        <ComboBoxItem Content="Ajustar brilho e temperatura" />
+                        <ComboBoxItem Content="Apagar" />
+                    </ComboBox>
+                    <StackPanel x:Name="LampadaValores" Orientation="Horizontal" Spacing="12">
+                        <NumberBox x:Name="LampadaBrilho" Header="Brilho (1 a 100)" Minimum="1" Maximum="100" Width="150" SpinButtonPlacementMode="Inline" />
+                        <NumberBox x:Name="LampadaTemp" Header="Temperatura (0 quente, 100 fria)" Minimum="0" Maximum="100" Width="220" SpinButtonPlacementMode="Inline" />
+                    </StackPanel>
+                    <ComboBox x:Name="TelasModo" Header="Brilho das telas" MinWidth="320" SelectionChanged="TelasModo_SelectionChanged">
+                        <ComboBoxItem Content="Não mexer" />
+                        <ComboBoxItem Content="Todas no mesmo valor" />
+                        <ComboBoxItem Content="Valor salvo por tela" />
+                    </ComboBox>
+                    <NumberBox x:Name="TelasValor" Header="Brilho (0 a 100)" Minimum="0" Maximum="100" Width="150" HorizontalAlignment="Left" SpinButtonPlacementMode="Inline" />
+                    <ComboBox x:Name="TemaCena" Header="Tema" MinWidth="320">
+                        <ComboBoxItem Content="Não mudar" />
+                        <ComboBoxItem Content="Escuro" />
+                        <ComboBoxItem Content="Claro" />
+                    </ComboBox>
+                    <ComboBox x:Name="LuzCena" Header="Luz Noturna" MinWidth="320">
+                        <ComboBoxItem Content="Não mudar" />
+                        <ComboBoxItem Content="Ligar" />
+                        <ComboBoxItem Content="Desligar" />
+                    </ComboBox>
+                    <Button Content="Salvar cena" Style="{StaticResource AccentButtonStyle}" Click="SalvarCena_Click" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Agenda" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Em cada horário, muda o brilho das telas ou aplica uma cena. A agenda nunca liga nem apaga lâmpadas." />
+                    <ToggleSwitch x:Name="AgendaAtiva" Header="Agenda ativa" Toggled="AgendaAtiva_Toggled" />
+                    <StackPanel x:Name="LinhasAgenda" Spacing="8" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Adicionar horário" Click="AdicionarHorario_Click" />
+                        <Button Content="Salvar agenda" Style="{StaticResource AccentButtonStyle}" Click="SalvarAgenda_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Predefinições da lâmpada" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Os botões da página das lâmpadas e do menu da bandeja." />
+                    <StackPanel x:Name="LinhasPredefinicoes" Spacing="8" />
+                    <Button Content="Salvar predefinições" Style="{StaticResource AccentButtonStyle}" Click="SalvarPredefinicoes_Click" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBlock Text="Luz Noturna e lâmpadas" Style="{StaticResource BodyStrongTextBlockStyle}" />
+                    <ToggleSwitch x:Name="LuzLampada" Header="Quando a Luz Noturna ligar, ajustar as lâmpadas acesas" Toggled="LuzLampada_Toggled" />
+                    <StackPanel Orientation="Horizontal" Spacing="12">
+                        <NumberBox x:Name="LuzBrilho" Header="Brilho (1 a 100)" Minimum="1" Maximum="100" Width="150" SpinButtonPlacementMode="Inline" />
+                        <NumberBox x:Name="LuzTemp" Header="Temperatura (0 quente, 100 fria)" Minimum="0" Maximum="100" Width="220" SpinButtonPlacementMode="Inline" />
+                    </StackPanel>
+                    <Button Content="Salvar" Click="SalvarLuz_Click" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

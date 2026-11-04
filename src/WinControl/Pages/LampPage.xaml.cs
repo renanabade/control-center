@@ -30,6 +30,22 @@ public sealed partial class LampPage : Page
     }
 
     // cada fileira de lâmpadas precisa de espaço próprio: sem isto, a parte de baixo da página ficava cortada
+    /// <summary>Os quatro botões mostram o que está nas configurações. Sobrando botão, ele some.</summary>
+    private void MontarPredefinicoes()
+    {
+        var lista = Conforto.Predefinicoes;
+        var botoes = Presets.Children.OfType<Button>().ToList();
+        for (int i = 0; i < botoes.Count; i++)
+        {
+            botoes[i].Visibility = i < lista.Count ? Visibility.Visible : Visibility.Collapsed;
+            if (i >= lista.Count) continue;
+            botoes[i].Tag = $"{lista[i].Brilho},{lista[i].Temperatura}";
+            var textos = ((StackPanel)botoes[i].Content).Children.OfType<TextBlock>().ToList();
+            textos[0].Text = lista[i].Nome;
+            textos[1].Text = $"{lista[i].Brilho}%";
+        }
+    }
+
     private void PedirAltura() =>
         App.Panel?.AjustarAltura(Lamp.Aqui.Count > 1 ? Chips.RowDefinitions.Count * AlturaFileira : 0);
 
@@ -155,6 +171,7 @@ public sealed partial class LampPage : Page
         try
         {
             MontarChips();
+            MontarPredefinicoes();
             var alvos = Alvos();
             AtualizarChips(alvos);
             var c = Lamp.Resumo(alvos);

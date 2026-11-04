@@ -15,7 +15,8 @@ Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita e
   troca automática do modo conforme o jogo.
 - **Periféricos**: luz do mouse Razer DeathAdder V2 e dos teclados Redragon Kumara V2 e Pro, sem os programas dos
   fabricantes. Os outros aparelhos ficam com a Iluminação Dinâmica do Windows.
-- **Configurações** numa janela própria, com guia para a lâmpada e para a API, sem editar arquivos.
+- **Configurações** numa janela própria, sem editar arquivos: lâmpadas, cenas, agenda, predefinições, monitor do giro,
+  atalhos de teclado, periféricos, pastas de jogos e API.
 - **API REST** opcional (ASP.NET Core) para controlar cenas e aparelhos por outros dispositivos da rede: vem desligada e
   se liga nas configurações. Veja [docs/api.md](docs/api.md).
 
@@ -55,8 +56,8 @@ Sem a lâmpada configurada, o resto (telas, tema, cenas, projetar) funciona norm
 | Clique no ícone da bandeja | Abre o painel. Clicar fora ou apertar Esc fecha. |
 | Botão direito no ícone | Menu completo: cenas, presets da lâmpada, timer, projetar, tema, agenda, configurações. |
 | Botão direito numa cena (no painel) | Escolher o tema da cena, ligar ou não a Luz Noturna, ou **salvar o estado atual na cena**. |
-| `Ctrl+Alt+R` | Gira o monitor configurado. |
-| `Win+Ctrl+Shift+D` | Alterna o tema claro/escuro. |
+| `Ctrl+Alt+R` | Gira o monitor escolhido em **Configurações → Aparelhos**. O atalho pode ser trocado ou desligado lá. |
+| `Win+Ctrl+Shift+D` | Alterna o tema claro/escuro. O atalho pode ser trocado ou desligado lá. |
 
 ### Como as cenas funcionam
 

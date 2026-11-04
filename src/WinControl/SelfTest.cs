@@ -34,6 +34,16 @@ public static class SelfTest
                 P($"BACKUP ida_e_volta={gravados == 1 && File.ReadAllText(Path.Combine(temp, "lamp_config.json")) == "conteudo"} senha_errada_recusada={senhaErrada} nome_estranho_ignorado={!File.Exists(Path.Combine(Path.GetDirectoryName(temp)!, "fora.txt"))} (esperado True True True)");
             }
             finally { Directory.Delete(temp, recursive: true); }
+            // o que vira opção: atalhos sem hardware, monitores do PC que está rodando
+            bool atalhosOk = Hotkeys.Ler("Ctrl+Alt+R") is { Ctrl: true, Alt: true, Shift: false, Win: false, Vk: 'R' }
+                && Hotkeys.Ler("Win+Ctrl+Shift+D") is { Win: true, Ctrl: true, Shift: true, Vk: 'D' }
+                && Hotkeys.Ler("Ctrl+F5") is { Vk: 0x74 }
+                && Hotkeys.Texto(Hotkeys.Ler("Ctrl+Alt+R")!.Value) == "Ctrl+Alt+R"
+                && Hotkeys.Texto(Hotkeys.Ler("Ctrl+F5")!.Value) == "Ctrl+F5"
+                && Hotkeys.Ler("R") == null && Hotkeys.Ler("") == null && Hotkeys.Ler("Ctrl+") == null;
+            P($"ATALHOS leitura={atalhosOk} (esperado True)");
+            P($"MONITORES {string.Join(", ", Rotation.Listar().Select(t => $"{t.Nome}={t.Id}"))} | escolhido='{Conforto.Texto("monitor_girar")}'");
+            P($"PERIFERICOS ids: valido={Perifericos.IdValido("1532:0084:3F", true) && Perifericos.IdValido("320F:5000", false)} recusa={!Perifericos.IdValido("1532:84", true) && !Perifericos.IdValido("xyz", false)} (esperado True True)");
             // nada de chave aqui: só o que dá para colar num pedido de ajuda
             P($"REDE lugares={Rede.Atuais.Count} lampadas={Lamp.Todas.Count} aqui={Lamp.Aqui.Count}");
             Lamp.ProcurarSemIp(agora: true);

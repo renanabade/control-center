@@ -1,4 +1,4 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Nodes;
 
 namespace WinControl.Services;
@@ -7,7 +7,7 @@ namespace WinControl.Services;
 /// Cenas (lâmpada + telas + tema de uma vez) e agenda por horário. Tudo fica em conforto.json.
 /// Formato de uma cena ou item da agenda (todas as chaves são opcionais):
 ///   "lampada": {"ligada": true, "brilho": 1, "temperatura": 0}   ou {"ligada": false}
-///   "telas": 40 (todas)  ou  {"LG ULTRAGEAR": 40, "Notebook": 20}
+///   "telas": 40 (todas)  ou  {"Monitor externo": 40, "Notebook": 20}
 ///   "tema": "escuro" | "claro"
 ///   "luz_noturna": true | false
 ///   "cena": "Noite"  (só na agenda: aplica uma cena pelo nome)
@@ -19,8 +19,21 @@ public static class Conforto
     {
       "tema_automatico": true,
       "telas_juntas": false,
-      "agenda_ativa": true,
-      "agenda": [ { "hora": "05:00", "telas": 85 }, { "hora": "18:30", "telas": 0 } ],
+      "agenda_ativa": false,
+      "agenda": [],
+      "monitor_girar": "",
+      "girar_sentido": 90,
+      "atalho_girar": "Ctrl+Alt+R",
+      "atalho_tema": "Win+Ctrl+Shift+D",
+      "luz_noturna_lampada": true,
+      "luz_noturna_brilho": 1,
+      "luz_noturna_temperatura": 0,
+      "predefinicoes": [
+        { "nome": "Noite", "brilho": 1, "temperatura": 0 },
+        { "nome": "Relaxar", "brilho": 35, "temperatura": 15 },
+        { "nome": "Padrão", "brilho": 50, "temperatura": 50 },
+        { "nome": "Foco", "brilho": 100, "temperatura": 100 }
+      ],
       "cenas": [
         { "nome": "Trabalho", "lampada": { "ligada": true, "brilho": 50, "temperatura": 50 }, "telas": 85, "tema": "claro", "luz_noturna": false },
         { "nome": "Noite", "lampada": { "ligada": true, "brilho": 1, "temperatura": 0 }, "telas": 0, "tema": "escuro", "luz_noturna": true },
@@ -35,6 +48,61 @@ public static class Conforto
     private static (DateOnly day, string hora)? _lastSlot;
 
     public static bool Flag(string key) => Conf[key]?.GetValue<bool>() ?? false;
+
+    public static string Texto(string key) => Conf[key]?.ToString() ?? "";
+
+    public static int Inteiro(string key, int padrao)
+    {
+        try { return Conf[key]?.GetValue<int>() ?? padrao; }
+        catch (Exception) { return padrao; }   // editado à mão, com um valor que não é número
+    }
+
+    /// <summary>Muda uma opção qualquer e grava.</summary>
+    public static void Definir(string key, JsonNode? valor)
+    {
+        Conf[key] = valor;
+        Save();
+        Hotkeys.Recarregar();
+        Bus.Notify();
+    }
+
+    public sealed record Predefinicao(string Nome, int Brilho, int Temperatura);
+
+    /// <summary>Os botões da lâmpada no painel e na bandeja.</summary>
+    public static List<Predefinicao> Predefinicoes =>
+        (Conf["predefinicoes"] as JsonArray)?.OfType<JsonObject>().Select(p => new Predefinicao(
+            p["nome"]?.ToString() ?? "?", Math.Clamp(p["brilho"]?.GetValue<int>() ?? 50, 1, 100), Math.Clamp(p["temperatura"]?.GetValue<int>() ?? 50, 0, 100))).ToList() ?? [];
+
+    public static JsonObject? CenaPorNome(string nome) => Cenas.OfType<JsonObject>().FirstOrDefault(x => x["nome"]?.ToString() == nome);
+
+    /// <summary>Cria (nomeOriginal nulo) ou troca uma cena. Na agenda, os itens que apontam para ela seguem o nome novo.</summary>
+    public static void SalvarCena(string? nomeOriginal, JsonObject cena)
+    {
+        string novo = cena["nome"]!.ToString();
+        var lista = Conf["cenas"] as JsonArray ?? (JsonArray)(Conf["cenas"] = new JsonArray());
+        if (nomeOriginal != null && CenaPorNome(nomeOriginal) is { } velha)
+        {
+            lista[lista.IndexOf(velha)] = cena;
+            if (nomeOriginal != novo)
+            {
+                foreach (var item in Agenda.OfType<JsonObject>().Where(i => i["cena"]?.ToString() == nomeOriginal)) item["cena"] = novo;
+                if (Cena == nomeOriginal) Cena = novo;
+            }
+        }
+        else lista.Add(cena);
+        Save();
+        Bus.Notify();
+    }
+
+    public static void RemoverCena(string nome)
+    {
+        if (CenaPorNome(nome) is { } c) Cenas.Remove(c);
+        // item da agenda que só chamava esta cena não tem mais o que fazer
+        foreach (var item in Agenda.OfType<JsonObject>().Where(i => i["cena"]?.ToString() == nome).ToList()) Agenda.Remove(item);
+        if (Cena == nome) Cena = null;
+        Save();
+        Bus.Notify();
+    }
 
     public static JsonArray Cenas => Conf["cenas"] as JsonArray ?? new JsonArray();
     public static JsonArray Agenda => Conf["agenda"] as JsonArray ?? new JsonArray();
@@ -59,6 +127,7 @@ public static class Conforto
             Log.Write($"conforto.json invalido, usando o padrao: {e.Message}");
             Conf = (JsonObject)JsonNode.Parse(DefaultsJson)!;
         }
+        Hotkeys.Recarregar();
     }
 
     public static void Save()

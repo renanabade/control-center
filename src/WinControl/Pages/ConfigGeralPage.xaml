@@ -36,9 +36,9 @@
                 <StackPanel Spacing="10">
                     <TextBlock Text="Arquivos" Style="{StaticResource BodyStrongTextBlockStyle}" />
                     <TextBlock TextWrapping="Wrap" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                               Text="Cenas e agenda ainda são editadas no arquivo. O app percebe a mudança e recarrega sozinho." />
+                               Text="Quase tudo se ajusta nestas abas. Se preferir editar à mão, o app percebe a mudança no arquivo de cenas e recarrega sozinho." />
                     <StackPanel Orientation="Horizontal" Spacing="8">
-                        <Button Content="Editar cenas e agenda" Click="Cenas_Click" />
+                        <Button Content="Abrir o arquivo de cenas" Click="Cenas_Click" />
                         <Button Content="Abrir pasta de configuração" Click="Pasta_Click" />
                         <Button Content="Abrir log" Click="Log_Click" />
                     </StackPanel>
