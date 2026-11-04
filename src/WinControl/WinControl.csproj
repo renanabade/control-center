@@ -39,6 +39,15 @@
     <ProjectReference Include="..\ControlCenter.Contracts\ControlCenter.Contracts.csproj" />
   </ItemGroup>
 
+  <!-- o publish deixa de fora as telas compiladas e os recursos do app: o programa abria, mas nenhuma janela carregava -->
+  <Target Name="CopiarInterfaceNaPublicacao" AfterTargets="Publish">
+    <ItemGroup>
+      <ArquivosDeInterface Include="$(OutDir)**\*.xbf" />
+      <ArquivosDeInterface Include="$(OutDir)$(AssemblyName).pri" />
+    </ItemGroup>
+    <Copy SourceFiles="@(ArquivosDeInterface)" DestinationFolder="$(PublishDir)%(RecursiveDir)" />
+  </Target>
+
   <ItemGroup>
     <Content Include="Assets\icon.ico" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="Assets\icon.png" CopyToOutputDirectory="PreserveNewest" />

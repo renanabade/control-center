@@ -21,6 +21,14 @@ jobs:
         run: dotnet build src/WinControl -c Release
       - name: Testar a API
         run: dotnet test --project tests/ControlCenter.Api.Tests -c Release
+      # sem estes arquivos, a versão publicada abre sem conseguir carregar nenhuma janela
+      - name: Conferir o pacote de publicação
+        shell: pwsh
+        run: |
+          dotnet publish src/WinControl -c Release -r win-x64 --self-contained -o pacote
+          foreach ($f in 'WinControl.pri', 'PanelWindow.xbf', 'SettingsWindow.xbf', 'Pages/MainPage.xbf', 'Pages/LampPage.xbf') {
+            if (-not (Test-Path "pacote/$f")) { throw "Faltou no pacote: $f" }
+          }
 
   docker:
     runs-on: ubuntu-latest
