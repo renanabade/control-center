@@ -11,7 +11,9 @@ Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita e
 - **DualSense** por USB ou Bluetooth: cor e intensidade da luz, emulação de **Xbox 360** ou **PS4** (ViGEmBus) e
   troca automática do modo conforme o jogo.
 - **Periféricos**: luz do mouse Razer e do teclado Redragon, sem os programas dos fabricantes.
-- **API REST** (ASP.NET Core) para controlar cenas e aparelhos por outros dispositivos da rede: [docs/api.md](docs/api.md).
+- **Configurações** numa janela própria, com guia para a lâmpada e para a API, sem editar arquivos.
+- **API REST** opcional (ASP.NET Core) para controlar cenas e aparelhos por outros dispositivos da rede: vem desligada e
+  se liga nas configurações. Veja [docs/api.md](docs/api.md).
 
 Leve parado: cerca de 0,2% de um núcleo e 95 MB, porque reage a eventos do Windows em vez de ficar consultando. A
 medição é sem controle virtual ativo: veja [docs/desempenho.md](docs/desempenho.md).
@@ -30,8 +32,9 @@ medição é sem controle virtual ativo: veja [docs/desempenho.md](docs/desempen
 3. **Rode** `src\WinControl\bin\Release\net10.0-windows10.0.26100.0\win-x64\WinControl.exe` com dois cliques ou num
    terminal normal. Veja o [aviso sobre isolamento](docs/problemas.md#nada-do-que-eu-mudo-tem-efeito) antes de abrir
    o app de dentro de outro programa.
-4. **Configure a lâmpada:** siga o [guia da lâmpada](docs/lampada.md). Para buscar a chave, basta rodar
-   `tools/pegar_chave.py` e escanear um QR code no Smart Life.
+4. **Configure a lâmpada** em bandeja → **Configurações** → **Lâmpada**, que tem o passo a passo. Para buscar a chave,
+   basta rodar `tools/pegar_chave.py` e escanear um QR code no Smart Life. Detalhes no
+   [guia da lâmpada](docs/lampada.md).
 
 Sem a lâmpada configurada, o resto (telas, tema, cenas, projetar) funciona normalmente. O painel avisa
 "Não configurada" e diz o que falta.

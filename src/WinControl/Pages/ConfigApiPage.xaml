@@ -1,0 +1,57 @@
+<Page
+    x:Class="WinControl.Pages.ConfigApiPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+
+    <ScrollViewer>
+        <StackPanel Padding="28,24" Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
+            <StackPanel>
+                <TextBlock Text="API remota" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Name="Status" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <TextBlock TextWrapping="Wrap"
+                       Text="Opcional. Deixa o celular, outro PC ou uma automação controlar o app pela rede. Sem ela, o Control Center funciona igual, e nada fica aberto na rede." />
+
+            <InfoBar x:Name="Aviso" IsClosable="True" />
+            <InfoBar x:Name="AvisoRede" Severity="Warning" IsClosable="False" Title="Rede pública">
+                <InfoBar.ActionButton>
+                    <Button Content="Abrir configurações de rede" Click="Rede_Click" />
+                </InfoBar.ActionButton>
+            </InfoBar>
+
+            <!-- instalada: ligar, desligar, sempre ligada -->
+            <Border x:Name="Controles" Style="{StaticResource ConfigCardStyle}" Visibility="Collapsed">
+                <StackPanel Spacing="8">
+                    <ToggleSwitch x:Name="Ligada" Header="Ligada" Toggled="Ligada_Toggled" />
+                    <ToggleSwitch x:Name="Sempre" Header="Sempre ligada: inicia com o Windows, mesmo sem ninguém logado" Toggled="Sempre_Toggled" />
+                    <TextBlock TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}" Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                               Text="Mudar isto pede a confirmação de administrador do Windows. Os aparelhos só respondem com o Control Center aberto." />
+                    <TextBlock x:Name="Enderecos" TextWrapping="Wrap" IsTextSelectionEnabled="True" FontFamily="Consolas" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="Swagger" Content="Abrir Swagger" Click="Swagger_Click" />
+                        <Button Content="Trocar a senha" Click="Senha_Click" />
+                        <Button Content="Remover a API" Click="Remover_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+
+            <!-- instalar ou reinstalar -->
+            <Expander x:Name="Instalacao" Header="Instalar" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <StackPanel Spacing="12">
+                    <TextBlock TextWrapping="Wrap" Text="1. Escolha a porta e o usuário e clique em Instalar. O Windows pede a confirmação de administrador." />
+                    <TextBlock TextWrapping="Wrap" Text="2. Abre uma janela que compila e instala o serviço. Ela precisa do .NET 10 SDK e leva alguns minutos." />
+                    <TextBlock TextWrapping="Wrap" Text="3. Na primeira instalação, a janela mostra a senha uma única vez. Guarde-a num gerenciador de senhas: só o hash dela fica salvo." />
+                    <TextBlock TextWrapping="Wrap" Text="A API usa HTTP sem criptografia: use só em redes de confiança e nunca exponha a porta na internet." />
+                    <NumberBox x:Name="PortaBox" Header="Porta" Minimum="1024" Maximum="65535" Width="160" HorizontalAlignment="Left" />
+                    <TextBox x:Name="UsuarioBox" Header="Usuário" Width="240" HorizontalAlignment="Left" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button x:Name="Instalar" Content="Instalar" Style="{StaticResource AccentButtonStyle}" Click="Instalar_Click" />
+                        <HyperlinkButton Content="Guia completo da API" NavigateUri="https://github.com/renanabade/control-center/blob/main/docs/api.md" />
+                    </StackPanel>
+                </StackPanel>
+            </Expander>
+        </StackPanel>
+    </ScrollViewer>
+</Page>

@@ -32,7 +32,7 @@ Ferramentas como `tools/pegar_chave.py` também precisam rodar num terminal norm
 | `Não configurada (falta a local_key)` | Config sem chave | [Buscar a chave](lampada.md#buscar-a-chave-qr-code-sem-portal-da-tuya) |
 | `Err 901/905 inacessivel` | IP errado, lâmpada sem energia ou **VPN bloqueando a rede local** | No Proton VPN e similares, ative "Allow LAN connections". |
 | `A lampada esta anunciando em X, mas nao responde ao PC` | Firewall ou VPN | Libere a porta TCP 6668 na rede local. |
-| `Err 914` | Chave errada: a lâmpada foi readicionada no app | Rode `tools/pegar_chave.py` de novo. |
+| `Err 914` | Chave errada: a lâmpada foi readicionada no app | Rode `tools/pegar_chave.py` de novo e clique em **Recarregar do arquivo** em Configurações → Lâmpada. |
 | `Dormindo (acorda pelo Bluetooth)` | Wi-Fi da lâmpada em economia | Normal. Clicar em ligar acorda a lâmpada pelo Bluetooth. |
 | `BLE: lampada nao encontrada` | Bluetooth do PC desligado ou longe demais | Ligue o Bluetooth do PC e confira o `ble_mac`. |
 

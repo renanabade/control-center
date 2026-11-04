@@ -2,6 +2,9 @@
 
 API REST para controlar o control-center por outros aparelhos da rede: celular, outro PC, automações.
 
+**É opcional e vem desligada.** Sem ela, o app funciona igual e nem abre o pipe. Tudo se controla em **Configurações →
+API remota**: instalar, ligar, desligar, deixar sempre ligada, trocar a senha e remover.
+
 ## Como funciona
 
 ```
@@ -36,7 +39,18 @@ Com Docker, também simulado: copie `.env.example` para `.env`, preencha e rode 
 
 ### De verdade, como serviço do Windows
 
-Num PowerShell **como administrador**, com o app da bandeja já compilado:
+Pelo app: **Configurações → API remota → Instalar**. O Windows pede a confirmação de administrador e abre a janela do
+instalador. É preciso ter a pasta do projeto e o .NET 10 SDK, porque o script compila a API.
+
+| Na aba | O que faz | Serviço | Início com o Windows |
+|---|---|---|---|
+| Desligar | Para a API e fecha o pipe do app | parado | manual |
+| Ligar | Liga até o próximo reinício | rodando | manual |
+| Sempre ligada | Liga e inicia com o Windows, mesmo sem ninguém logado | rodando | automático |
+
+Cada mudança passa pelo UAC. Os aparelhos só respondem com o app aberto, mesmo com a API sempre ligada.
+
+Ou num PowerShell **como administrador**:
 
 ```powershell
 .\tools\instalar-servico.ps1
@@ -46,7 +60,8 @@ O script publica a API em `Program Files`, cria o serviço na conta `LocalServic
 particulares** e mostra a senha gerada, uma única vez. Para remover: `.\tools\remover-servico.ps1`.
 
 Dados em `%ProgramData%\ControlCenter`: `api.settings.json` (hash da senha e chave do JWT) e `controlcenter.db`
-(histórico). Para trocar a senha, rode `ControlCenter.Api.exe setup --substituir` e reinicie o serviço.
+(histórico). Para trocar a senha, use **Trocar a senha** na aba, ou rode `ControlCenter.Api.exe setup --substituir` e
+reinicie o serviço. A chave do JWT é trocada junto, então os tokens já emitidos deixam de valer.
 
 ### Segurança na rede
 

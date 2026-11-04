@@ -28,6 +28,8 @@
                     <FontIcon Glyph="&#xE713;" FontSize="14" />
                     <Button.Flyout>
                         <MenuFlyout Opening="Menu_Opening">
+                            <MenuFlyoutItem Text="Abrir configurações" Click="MiSettings_Click" />
+                            <MenuFlyoutSeparator />
                             <ToggleMenuFlyoutItem x:Name="MiAutostart" Text="Iniciar com o Windows" Click="MiAutostart_Click" />
                             <ToggleMenuFlyoutItem x:Name="MiAutoTheme" Text="Tema segue a Luz Noturna" Click="MiAutoTheme_Click" />
                             <MenuFlyoutSeparator />

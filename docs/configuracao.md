@@ -1,6 +1,7 @@
 # Referência dos arquivos de configuração
 
-Os dois arquivos ficam em `%APPDATA%\win-control`. Pela bandeja: **Abrir pasta de configuração**.
+Os dois arquivos ficam em `%APPDATA%\win-control`. Pela bandeja: **Abrir pasta de configuração**. A lâmpada, a API e as
+opções também se ajustam na janela **Configurações**, sem editar nada à mão.
 
 ## `lamp_config.json`
 
@@ -48,6 +49,8 @@ agenda**). O app percebe quando o arquivo muda e recarrega sozinho.
 | `tema_automatico` | O tema acompanha a Luz Noturna: escuro quando ela liga, claro quando desliga. Se a mudança da Luz Noturna veio de uma cena, vale o tema da cena. |
 | `telas_juntas` | Mexer no brilho de uma tela mexe em todas. |
 | `agenda_ativa` | Liga ou desliga a agenda. |
+| `api_ativa` | O app abre o pipe da [API](api.md). Sem esta chave, vale se o serviço está instalado. |
+| `api_usuario` | Usuário da API, para a tela de configurações sugerir ao trocar a senha. |
 
 ### Partes de uma cena ou item da agenda
 
