@@ -20,7 +20,29 @@ public static class ApiBridge
         public string Codigo { get; } = codigo;
     }
 
-    public static void Start() => Task.Run(AcceptLoop);
+    private static readonly object Trava = new();
+    private static CancellationTokenSource? _parar;
+
+    public static void Start()
+    {
+        lock (Trava)
+        {
+            if (_parar != null) return;
+            var parar = new CancellationTokenSource();
+            _parar = parar;
+            Task.Run(() => AcceptLoop(parar.Token));
+        }
+    }
+
+    /// <summary>Fecha o pipe. Um pedido já em andamento termina sozinho.</summary>
+    public static void Stop()
+    {
+        lock (Trava)
+        {
+            _parar?.Cancel();
+            _parar = null;
+        }
+    }
 
     /// <summary>Só o usuário e o LocalService (a conta do serviço) entram, e nunca pela rede.</summary>
     private static PipeSecurity Seguranca()
@@ -41,35 +63,44 @@ public static class ApiBridge
         PipeOptions.Asynchronous | (primeira ? PipeOptions.FirstPipeInstance : PipeOptions.None),
         0, 0, Seguranca());
 
-    private static async Task AcceptLoop()
+    private static async Task AcceptLoop(CancellationToken parar)
     {
         bool primeira = true;
-        while (true)
+        try
         {
-            NamedPipeServerStream pipe;
-            try
+            while (!parar.IsCancellationRequested)
             {
-                pipe = Criar(primeira);
-                primeira = false;
-            }
-            catch (Exception e)
-            {
-                Log.Write($"API: nao consegui abrir o pipe ({e.Message})");
-                await Task.Delay(TimeSpan.FromSeconds(5));   // também cai aqui com todas as conexões ocupadas: passa logo
-                continue;
-            }
-            try
-            {
-                await pipe.WaitForConnectionAsync();
-                _ = Task.Run(() => Atender(pipe));
-            }
-            catch (Exception e)
-            {
-                Log.Write($"API: erro ao aceitar conexao ({e.Message})");
-                await pipe.DisposeAsync();
-                await Task.Delay(1000);
+                NamedPipeServerStream pipe;
+                try
+                {
+                    pipe = Criar(primeira);
+                    primeira = false;
+                }
+                catch (Exception e)
+                {
+                    Log.Write($"API: nao consegui abrir o pipe ({e.Message})");
+                    await Task.Delay(TimeSpan.FromSeconds(5), parar);   // também cai aqui com todas as conexões ocupadas: passa logo
+                    continue;
+                }
+                try
+                {
+                    await pipe.WaitForConnectionAsync(parar);
+                    _ = Task.Run(() => Atender(pipe));
+                }
+                catch (OperationCanceledException)
+                {
+                    await pipe.DisposeAsync();
+                    return;
+                }
+                catch (Exception e)
+                {
+                    Log.Write($"API: erro ao aceitar conexao ({e.Message})");
+                    await pipe.DisposeAsync();
+                    await Task.Delay(1000, parar);
+                }
             }
         }
+        catch (OperationCanceledException) { /* desligada enquanto esperava para tentar de novo */ }
     }
 
     /// <summary>Uma conexão, um pedido. Um cliente que conecta e não fala não pode prender uma das instâncias.</summary>

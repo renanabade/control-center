@@ -3,6 +3,9 @@
 O app fala com a lâmpada Tuya **direto pela rede local** (protocolo 3.3, TCP 6668) e, se o Wi-Fi dela estiver
 dormindo, pelo **Bluetooth**. Os dois caminhos exigem a `local_key` da lâmpada.
 
+Tudo isto se preenche em **Configurações → Lâmpada** (bandeja → **Configurações**), que também testa a conexão. A chave
+guardada nunca volta para a tela.
+
 ## O que precisa
 
 | Campo | O que é | Como conseguir |
@@ -28,7 +31,7 @@ py tools\pegar_chave.py
 2. Abre um QR code. No Smart Life, toque em **Eu → ícone de scan**, escaneie e confirme.
 3. O script grava `id` e `local_key` em `%APPDATA%\win-control\lamp_config.json`. A chave não aparece na tela e o
    login não fica salvo.
-4. Reinicie o Control Center.
+4. Em **Configurações → Lâmpada**, clique em **Recarregar do arquivo**.
 
 > A chave muda se a lâmpada for **removida e adicionada de novo** no app. Nesse caso o log mostra
 > `Err 914 (local_key ou versao errada)`. Rode o script outra vez.

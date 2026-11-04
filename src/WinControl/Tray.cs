@@ -158,6 +158,7 @@ public sealed class Tray : IDisposable
         _menu.Items.Add(Item("Tema segue a Luz Noturna", () => Core.ToggleOption("tema_automatico"), check: Conforto.Flag("tema_automatico")));
         _menu.Items.Add(Item("Agenda das telas", () => Core.ToggleOption("agenda_ativa"), check: Conforto.Flag("agenda_ativa")));
         _menu.Items.Add(new WF.ToolStripSeparator());
+        _menu.Items.Add(Item("Configurações", () => Ui.Run(() => App.OpenSettings())));
         _menu.Items.Add(Item("Iniciar com o Windows", Core.ToggleAutostart, check: Core.AutostartEnabled()));
         _menu.Items.Add(Item("Editar cenas e agenda", () => Process.Start("notepad.exe", AppPaths.Conforto)));
         _menu.Items.Add(Item("Abrir pasta de configuração", () => Process.Start("explorer.exe", AppPaths.Dir)));

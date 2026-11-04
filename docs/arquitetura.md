@@ -7,8 +7,10 @@ App WinUI 3 sem pacote (`WindowsPackageType=None`, self-contained), com uma inst
 src/WinControl/
   App.xaml.cs          início, instância única, argumentos de linha de comando
   PanelWindow.xaml.cs  painel flutuante: posição, foco, fechar ao clicar fora, soltar depois de 3 min escondido
+  SettingsWindow.xaml.cs  janela de configurações: normal, porque o painel some ao perder o foco
   Tray.cs              ícone e menu da bandeja (WinForms NotifyIcon)
-  Pages/               MainPage (blocos, cenas, brilho), LampPage, ProjectPage, DualSensePage, PerifericosPage
+  Pages/               MainPage (blocos, cenas, brilho), LampPage, ProjectPage, DualSensePage, PerifericosPage;
+                       ConfigGeralPage, ConfigLampadaPage e ConfigApiPage (abas das configurações)
   SelfTest.cs          teste sem interface contra o hardware real
   Services/
     Common.cs          AppPaths (%APPDATA%\win-control), Log, Bus (aviso de "algo mudou")
@@ -22,7 +24,8 @@ src/WinControl/
     DualSense.cs       DualSense por HID (USB 0x01/0x02, BT 0x31 com CRC32), luz, ViGEm (X360/DS4), HidHide
     Jogos.cs           modo automático: vigia a janela em primeiro plano (SetWinEventHook), categorias da Steam (57/58 = DualSense), jogos.json
     Perifericos.cs     luz do mouse Razer (Chroma) e do teclado Redragon (EVision), seguindo ou não o DualSense
-    ApiBridge.cs       servidor do named pipe que atende a ControlCenter.Api
+    ApiBridge.cs       servidor do named pipe que atende a ControlCenter.Api; só abre com a API ativa
+    ApiServico.cs      estado e controle do serviço da API (instalar, ligar, desligar), sempre pelo UAC
     DisplayProjection.cs, Rotation.cs, Hotkeys.cs
 src/ControlCenter.Contracts/   mensagens e protocolo do pipe, usados pelo app e pela API
 src/ControlCenter.Api/         API REST (ASP.NET Core): veja api.md
@@ -61,6 +64,7 @@ tools/
 | `--background` | Inicia sem abrir o painel (é o que o "Iniciar com o Windows" usa). |
 | `--show` | Abre o painel ao iniciar. |
 | `--page=lamp` / `--page=project` / `--page=dualsense` / `--page=perifericos` | Abre direto numa subpágina (para desenvolvimento). |
+| `--page=config` / `--page=config-lampada` / `--page=config-api` | Abre direto numa aba das configurações (para desenvolvimento). |
 | `--selftest` | Lê lâmpada, telas, tema, projeção e agenda e grava `selftest.txt` na pasta de config. |
 | `--selftest-write` | Também liga, muda e restaura a lâmpada. |
 | `--selftest-scenes` | Testa as regras de cena da lâmpada. |

@@ -13,3 +13,4 @@
 - Teste rápido sem interface: `WinControl.exe --selftest` grava `selftest.txt` na pasta de config.
 - API: `dotnet test --project tests\ControlCenter.Api.Tests` (sem hardware). Ela só alcança os aparelhos pelo pipe do
   app da bandeja (`ApiBridge.cs`); comandos novos entram lá e na `PonteSimulada`. Veja `docs/api.md`.
+- A API é opcional e vem desligada: sem `api_ativa`, o app não abre o pipe e precisa funcionar como se ela não existisse.

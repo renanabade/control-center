@@ -28,6 +28,7 @@ public static class Lamp
     private static readonly SemaphoreSlim ToggleLock = new(1, 1);
     private static int _fails;
     private static string _lastErr = "";
+    private static volatile string? _ultimoErro;
     private static DateTime _lastFind = DateTime.MinValue;
 
     public static bool ToggleBusy => ToggleLock.CurrentCount == 0;
@@ -38,7 +39,7 @@ public static class Lamp
         ["905"] = "inacessivel: VPN bloqueando a rede local, IP errado ou lampada sem energia",
         ["902"] = "a lampada nao respondeu a tempo",
         ["914"] = "local_key ou versao errada (lampada readicionada no app?)",
-        ["key"] = "rode o pegar_chave.py para buscar a chave",
+        ["key"] = "preencha a chave em Configuracoes > Lampada",
     };
 
     public static void Load()
@@ -70,6 +71,47 @@ public static class Lamp
     private static void SaveCfg() =>
         File.WriteAllText(AppPaths.Lamp, _cfg.ToJsonString(new JsonSerializerOptions { WriteIndented = true }));
 
+    /// <summary>O que a tela de configurações mostra. A chave nunca sai daqui: só se ela já existe.</summary>
+    public sealed record Config(string Id, string Ip, string BleMac, bool TemChave);
+
+    public static Config LerConfig()
+    {
+        string id = _cfg["id"]?.ToString() ?? "";
+        return new(id == "SEU_DEVICE_ID" ? "" : id, Ip, BleMac, (_cfg["local_key"]?.ToString() ?? "").Length == 16);
+    }
+
+    /// <summary>Chave vazia mantém a atual. Devolve o que está errado, ou null.</summary>
+    public static string? ValidarConfig(string id, string chave, string ip, string bleMac, bool temChave)
+    {
+        if (id.Length == 0 || id.Any(char.IsWhiteSpace)) return "Preencha o ID do dispositivo, sem espaços.";
+        if (chave.Length == 0 ? !temChave : chave.Length != 16) return "A chave local tem exatamente 16 caracteres.";
+        if (ip.Length > 0 && !(System.Net.IPAddress.TryParse(ip, out var a) && a.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork && ip.Count(c => c == '.') == 3))
+            return "O IP precisa estar no formato 192.168.0.10, ou ficar vazio.";
+        if (bleMac.Length > 0 && !System.Text.RegularExpressions.Regex.IsMatch(bleMac, "^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$"))
+            return "O MAC Bluetooth precisa estar no formato 42:07:67:06:8A:51, ou ficar vazio.";
+        return null;
+    }
+
+    public static void SalvarConfig(string id, string chave, string ip, string bleMac)
+    {
+        lock (CallLock)
+        {
+            _cfg["id"] = id;
+            if (chave.Length > 0) _cfg["local_key"] = chave;
+            _cfg["ip"] = ip;
+            _cfg["ble_mac"] = bleMac;
+            _cfg["version"] ??= 3.3;
+            SaveCfg();
+            _fails = 0; _lastErr = ""; _ultimoErro = null;
+        }
+        Log.Write("Configuracao da lampada salva pela tela de configuracoes");
+        Core.PokePoller();
+        Bus.Notify();
+    }
+
+    /// <summary>A última falha ao falar com a lâmpada, com a dica. A mensagem não leva a chave.</summary>
+    public static string? UltimoErro => _ultimoErro;
+
     private static string Ip => _cfg["ip"]?.ToString() ?? "";
     private static double Version => double.TryParse(_cfg["version"]?.ToString(), System.Globalization.NumberStyles.Float,
                                                      System.Globalization.CultureInfo.InvariantCulture, out var v) ? v : 3.3;
@@ -85,7 +127,7 @@ public static class Lamp
         if (r.Ok)
         {
             if (_fails > 0) Log.Write($"Conexao com a lampada restabelecida ({Ip})");
-            _fails = 0; _lastErr = "";
+            _fails = 0; _lastErr = ""; _ultimoErro = null;
             Cur.Online = true;
             return r.Data ?? new JsonObject();
         }
@@ -96,6 +138,7 @@ public static class Lamp
             string hint = ErrHint.TryGetValue(r.Err, out var h) ? $" ({h})" : "";
             Log.Write($"Falha ao falar com a lampada em {Ip} -> {msg}{hint}");
             _lastErr = msg;
+            _ultimoErro = msg + hint;
         }
         Cur.Online = false;
         return null;

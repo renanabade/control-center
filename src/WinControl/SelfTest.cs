@@ -13,6 +13,14 @@ public static class SelfTest
         try
         {
             Lamp.Load();
+            // tela de configurações: o que ela aceita e recusa, sem gravar nada
+            string chave = new('x', 16);
+            bool validaOk = Lamp.ValidarConfig("abc", chave, "", "", false) == null && Lamp.ValidarConfig("abc", "", "192.168.0.10", "42:07:67:06:8A:51", true) == null;
+            bool recusaOk = Lamp.ValidarConfig("", chave, "", "", false) != null && Lamp.ValidarConfig("abc", "", "", "", false) != null
+                         && Lamp.ValidarConfig("abc", "curta", "", "", true) != null && Lamp.ValidarConfig("abc", chave, "1.2", "", false) != null
+                         && Lamp.ValidarConfig("abc", chave, "", "42:07", false) != null;
+            P($"CONFIG validacao: aceita={validaOk} recusa={recusaOk} (esperado True True)");
+            P($"API instalacao: aceita={ApiServico.ValidarInstalacao(5080, "admin") == null} recusa={ApiServico.ValidarInstalacao(80, "admin") != null && ApiServico.ValidarInstalacao(5080, "a'; rm") != null} (esperado True True)");
             bool ok = Lamp.RefreshState();
             var c = Lamp.Cur;
             P($"LAMPADA leitura: ok={ok} online={c.Online} ligada={c.On} brilho={c.B}% temp={c.T} modo={c.Mode} h={c.H} s={c.S} timer={c.Timer}s");

@@ -8,6 +8,7 @@ public partial class App : Application
 {
     public static PanelWindow? Panel { get; private set; }
     public static Tray? Tray { get; private set; }
+    public static SettingsWindow? Settings { get; private set; }
 
     private static Mutex? _instance;
     private static EventWaitHandle? _showSignal;
@@ -55,8 +56,13 @@ public partial class App : Application
             }
         }) { IsBackground = true }.Start();
 
-        // para desenvolvimento: abre direto numa subpágina (--page=lamp | --page=project)
+        // para desenvolvimento: abre direto numa subpágina (--page=lamp | --page=project) ou aba (--page=config-api)
         var page = argv.FirstOrDefault(a => a.StartsWith("--page="))?[7..];
+        if (page?.StartsWith("config") == true)
+        {
+            OpenSettings(page.Replace("config-", ""));
+            return;
+        }
         if (page != null || argv.Contains("--show")) OpenPanel().ShowNearTray();
         if (page == "lamp") Panel!.OpenPage(typeof(Pages.LampPage));
         else if (page == "project") Panel!.OpenPage(typeof(Pages.ProjectPage));
@@ -75,6 +81,19 @@ public partial class App : Application
             Panel = p;
         }
         return Panel;
+    }
+
+    /// <summary>Esconde o painel antes: ele fica sempre por cima e cobriria a janela de configurações.</summary>
+    public static void OpenSettings(string aba = "geral")
+    {
+        Panel?.HidePanel();
+        if (Settings == null)
+        {
+            var s = new SettingsWindow();
+            s.Closed += (_, _) => { if (Settings == s) Settings = null; };
+            Settings = s;
+        }
+        Settings.Mostrar(aba);
     }
 
     public static void Quit()

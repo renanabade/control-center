@@ -185,6 +185,8 @@ public sealed partial class PanelWindow : Window
         MiAutoTheme.IsChecked = Conforto.Flag("tema_automatico");
     }
 
+    private void MiSettings_Click(object sender, RoutedEventArgs e) => App.OpenSettings();
+
     private void MiAutostart_Click(object sender, RoutedEventArgs e) => Core.ToggleAutostart();
 
     private void MiAutoTheme_Click(object sender, RoutedEventArgs e) => Core.ToggleOption("tema_automatico");

@@ -1,0 +1,44 @@
+<Page
+    x:Class="WinControl.Pages.ConfigLampadaPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    Background="Transparent">
+
+    <ScrollViewer>
+        <StackPanel Padding="28,24" Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
+            <StackPanel>
+                <TextBlock Text="Lâmpada" Style="{StaticResource SubtitleTextBlockStyle}" />
+                <TextBlock x:Name="Status" Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+            </StackPanel>
+
+            <Expander x:Name="Guia" Header="Como achar o ID e a chave" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left">
+                <StackPanel Spacing="10">
+                    <TextBlock TextWrapping="Wrap" Text="Só serve para lâmpadas Tuya, as do app Smart Life. O app fala com ela direto pela rede, sem nuvem, e a chave é o que cifra os comandos." />
+                    <TextBlock TextWrapping="Wrap" Text="1. Instale o Python e as dependências, num terminal normal, na pasta do projeto:" />
+                    <TextBlock IsTextSelectionEnabled="True" FontFamily="Consolas" TextWrapping="Wrap"
+                               Text="winget install Python.Python.3.13&#x0a;py -m pip install -r tools\requirements.txt" />
+                    <TextBlock TextWrapping="Wrap" Text="2. Rode o script abaixo. Ele pede o User Code, que fica no Smart Life em Eu, engrenagem, Conta e Segurança, User Code." />
+                    <TextBlock IsTextSelectionEnabled="True" FontFamily="Consolas" Text="py tools\pegar_chave.py" />
+                    <TextBlock TextWrapping="Wrap" Text="3. No Smart Life, toque em Eu, ícone de scan, escaneie o QR code e confirme. O script grava o ID e a chave sozinho, sem mostrá-la." />
+                    <TextBlock TextWrapping="Wrap" Text="4. Volte aqui e clique em Recarregar do arquivo." />
+                    <HyperlinkButton Content="Guia completo, com Bluetooth e IP fixo" NavigateUri="https://github.com/renanabade/control-center/blob/main/docs/lampada.md" Padding="0" />
+                </StackPanel>
+            </Expander>
+
+            <Border Style="{StaticResource ConfigCardStyle}">
+                <StackPanel Spacing="12">
+                    <TextBox x:Name="IdBox" Header="ID do dispositivo" />
+                    <PasswordBox x:Name="ChaveBox" Header="Chave local (local_key)" MaxLength="16" />
+                    <TextBox x:Name="IpBox" Header="IP (opcional)" PlaceholderText="Vazio: o app acha a lâmpada sozinho" />
+                    <TextBox x:Name="MacBox" Header="MAC Bluetooth (opcional)" PlaceholderText="42:07:67:06:8A:51. Acorda a lâmpada quando o Wi-Fi dela dorme" />
+                    <InfoBar x:Name="Aviso" IsClosable="True" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                        <Button Content="Salvar" Style="{StaticResource AccentButtonStyle}" Click="Salvar_Click" />
+                        <Button x:Name="Testar" Content="Testar conexão" Click="Testar_Click" />
+                        <Button Content="Recarregar do arquivo" Click="Recarregar_Click" />
+                    </StackPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</Page>
