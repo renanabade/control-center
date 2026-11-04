@@ -91,3 +91,17 @@ Tudo fica em `%APPDATA%\win-control`, **fora do repositório**, porque ali está
 | `win-control.log` | log. A primeira linha de cada início diz **qual pasta de config está em uso**. |
 
 O menu da bandeja tem **Abrir pasta de configuração** e **Abrir log**.
+
+## Tecnologias
+
+| Parte | Tecnologias |
+|---|---|
+| App da bandeja | C#, .NET 10, WinUI 3 (Windows App SDK), HidSharp, ViGEm Client |
+| API opcional | ASP.NET Core (minimal APIs), JWT, FluentValidation, EF Core com SQLite, OpenAPI e Swagger, health checks, serviço do Windows, named pipes |
+| Testes e entrega | xUnit, WebApplicationFactory, Docker, GitHub Actions |
+| Ferramenta das lâmpadas | Python, para buscar as chaves na conta do Smart Life |
+
+## Licença
+
+[MIT](LICENSE). Os protocolos dos periféricos foram estudados a partir do [OpenRGB](https://gitlab.com/CalcProgrammer1/OpenRGB),
+que tem licença própria.
