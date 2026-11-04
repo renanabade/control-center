@@ -152,11 +152,13 @@ public sealed class Tray : IDisposable
         _menu.Items.Add(pad);
 
         var peri = new WF.ToolStripMenuItem("Periféricos");
-        peri.DropDownItems.Add(Item("Mouse segue o controle", () => { Perifericos.Cfg.Mouse.SeguirControle ^= true; Perifericos.Changed(); },
-                                    check: Perifericos.Cfg.Mouse.SeguirControle));
-        peri.DropDownItems.Add(Item("Teclado segue o controle", () => { Perifericos.Cfg.Teclado.SeguirControle ^= true; Perifericos.Changed(); },
-                                    check: Perifericos.Cfg.Teclado.SeguirControle));
-        _menu.Items.Add(peri);
+        if (Perifericos.MouseOk)
+            peri.DropDownItems.Add(Item("Mouse segue o controle", () => { Perifericos.Cfg.Mouse.SeguirControle ^= true; Perifericos.Changed(); },
+                                        check: Perifericos.Cfg.Mouse.SeguirControle));
+        if (Perifericos.TecladoOk)
+            peri.DropDownItems.Add(Item("Teclado segue o controle", () => { Perifericos.Cfg.Teclado.SeguirControle ^= true; Perifericos.Changed(); },
+                                        check: Perifericos.Cfg.Teclado.SeguirControle));
+        if (peri.DropDownItems.Count > 0) _menu.Items.Add(peri);
 
         _menu.Items.Add(new WF.ToolStripSeparator());
         _menu.Items.Add(Item("Tema escuro", () => Core.SetDark(!Theme.IsDark()), check: Theme.IsDark()));

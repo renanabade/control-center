@@ -53,6 +53,7 @@ public sealed partial class MainPage : Page
             };
             LampLine.Text = $"{(Lamp.Aqui.Count > 1 ? "Lâmpadas" : "Lâmpada")} · {Ui.LampStatus()}";
             LampCaption.Text = Lamp.Aqui.Count > 1 ? "Lâmpadas" : "Lâmpada";
+            PerifericosTile.Visibility = Perifericos.AlgumEncontrado ? Visibility.Visible : Visibility.Collapsed;
             AgendaLine.Text = Conforto.Flag("agenda_ativa") && Conforto.NextItem() is { } nxt
                 ? $"Agenda · {nxt["hora"]} → {Conforto.Describe(nxt)}"
                 : "Agenda pausada";

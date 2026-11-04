@@ -31,6 +31,13 @@
 
             <!-- esquerda: qual aparelho, seguir o controle, brilho -->
             <StackPanel Spacing="14">
+                <!-- os aparelhos que o Windows controla: a cor deles é escolhida na tela da Iluminação Dinâmica -->
+                <StackPanel x:Name="Dinamica" Spacing="4" Visibility="Collapsed">
+                    <TextBlock x:Name="DinamicaLine" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
+                               Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
+                    <Button Content="Abrir a Iluminação Dinâmica" Click="AbrirDinamica_Click" />
+                </StackPanel>
+                <StackPanel x:Name="Controles" Spacing="14">
                 <SelectorBar x:Name="Which" SelectionChanged="Which_SelectionChanged">
                     <SelectorBarItem x:Name="MouseItem" Text="Mouse" />
                     <SelectorBarItem x:Name="KeyboardItem" Text="Teclado" />
@@ -72,10 +79,11 @@
                     <TextBlock x:Name="KeyLine" TextWrapping="Wrap" Style="{StaticResource CaptionTextBlockStyle}"
                                Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
                 </StackPanel>
+                </StackPanel>
             </StackPanel>
 
             <!-- direita: cor própria (desligada quando segue o controle) -->
-            <Viewbox Grid.Column="1" Height="190">
+            <Viewbox x:Name="RodaBox" Grid.Column="1" Height="190">
                 <ColorPicker x:Name="ColorWheel" ColorSpectrumShape="Ring" ColorSpectrumComponents="HueSaturation"
                              IsColorPreviewVisible="False" IsColorSliderVisible="False"
                              IsColorChannelTextInputVisible="False" IsHexInputVisible="False"

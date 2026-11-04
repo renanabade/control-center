@@ -7,6 +7,8 @@ __pycache__/
 lamp_config.json
 session.json
 devices_keys.json
+# configuração exportada: mesmo com senha, tem as chaves das lâmpadas
+*.ccconfig
 # segredos e dados da API
 .env
 api.settings.json

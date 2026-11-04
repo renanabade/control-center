@@ -64,7 +64,7 @@
 
                 <StackPanel Grid.Column="2" Spacing="6">
                     <Button Style="{StaticResource TileButtonStyle}" Click="Rotate_Click"
-                            ToolTipService.ToolTip="Girar o LG FULL HD (Ctrl+Alt+R)">
+                            ToolTipService.ToolTip="Girar o monitor (Ctrl+Alt+R)">
                         <FontIcon Glyph="&#xE7AD;" FontSize="16" />
                     </Button>
                     <TextBlock Text="Girar monitor" Style="{StaticResource TileCaptionStyle}" />
@@ -104,7 +104,7 @@
                 </StackPanel>
 
                 <!-- Periféricos: luz do mouse e do teclado -->
-                <StackPanel Grid.Row="2" Grid.Column="1" Spacing="6">
+                <StackPanel x:Name="PerifericosTile" Grid.Row="2" Grid.Column="1" Spacing="6" Visibility="Collapsed">
                     <Button Style="{StaticResource TileButtonStyle}" Click="OpenPerifericos_Click"
                             ToolTipService.ToolTip="Luz do mouse e do teclado">
                         <FontIcon Glyph="&#xE765;" FontSize="16" />

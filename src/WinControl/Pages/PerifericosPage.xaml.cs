@@ -25,9 +25,13 @@ public sealed partial class PerifericosPage : Page
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
-        Which.SelectedItem ??= MouseItem;
+        // começa pelo aparelho que existe neste PC
+        Which.SelectedItem ??= !Perifericos.MouseOk && Perifericos.TecladoOk ? KeyboardItem : MouseItem;
         Load();
     }
+
+    private void AbrirDinamica_Click(object sender, RoutedEventArgs e) =>
+        System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo("ms-settings:personalization-lighting") { UseShellExecute = true });
 
     private void OnHub() => Ui.Run(Refresh);
 
@@ -48,7 +52,18 @@ public sealed partial class PerifericosPage : Page
         _updating = true;
         try
         {
-            Status.Text = $"Mouse: {(Perifericos.MouseOk ? "ok" : "não encontrado")} · Teclado: {(Perifericos.TecladoOk ? "ok" : "não encontrado")}";
+            bool mouse = Perifericos.MouseOk, teclado = Perifericos.TecladoOk;
+            var dinamicos = Perifericos.Dinamicos;
+            var achados = new List<string>();
+            if (mouse) achados.Add("Razer DeathAdder V2");
+            if (teclado) achados.Add("Redragon Kumara");
+            achados.AddRange(dinamicos);
+            Status.Text = achados.Count > 0 ? string.Join(" · ", achados) : "Nenhum aparelho compatível encontrado";
+            MouseItem.Visibility = mouse ? Visibility.Visible : Visibility.Collapsed;
+            KeyboardItem.Visibility = teclado ? Visibility.Visible : Visibility.Collapsed;
+            Controles.Visibility = RodaBox.Visibility = mouse || teclado ? Visibility.Visible : Visibility.Collapsed;
+            Dinamica.Visibility = dinamicos.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+            DinamicaLine.Text = $"{string.Join(", ", dinamicos)}: a cor deste aparelho fica na Iluminação Dinâmica do Windows.";
             Follow.IsOn = Cur.SeguirControle;
             bool wheel = _key != null || !Cur.SeguirControle;
             ColorWheel.IsEnabled = wheel;

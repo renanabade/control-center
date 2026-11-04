@@ -6,8 +6,10 @@ using Microsoft.Win32.SafeHandles;
 namespace WinControl.Services;
 
 /// <summary>
-/// Luz do mouse (Razer DeathAdder V2, protocolo Chroma) e do teclado (Redragon Kumara V2, protocolo EVision), sem
+/// Luz do mouse (Razer DeathAdder V2, protocolo Chroma) e do teclado (Redragon Kumara V2 e Pro, protocolo EVision), sem
 /// Synapse nem programa da Redragon. Cada um pode seguir a cor do DualSense ou ter a sua. Protocolos do OpenRGB.
+/// Os outros aparelhos ficam com a Iluminação Dinâmica do Windows: um app sem pacote só controlaria a luz deles enquanto
+/// estivesse em primeiro plano, então aqui eles são só detectados, e a cor é escolhida na tela do próprio Windows.
 /// </summary>
 public static class Perifericos
 {
@@ -69,6 +71,26 @@ public static class Perifericos
     public static bool MouseOk { get; private set; }
     public static bool TecladoOk { get; private set; }
 
+    /// <summary>Aparelhos que a Iluminação Dinâmica do Windows enxerga.</summary>
+    public static IReadOnlyList<string> Dinamicos { get; private set; } = [];
+
+    /// <summary>Sem nada compatível, o bloco nem aparece no painel.</summary>
+    public static bool AlgumEncontrado => MouseOk || TecladoOk || Dinamicos.Count > 0;
+
+    private static volatile bool _lerDinamicos = true;
+
+    private static void LerDinamicos()
+    {
+        _lerDinamicos = false;
+        try
+        {
+            var achados = Windows.Devices.Enumeration.DeviceInformation
+                .FindAllAsync(Windows.Devices.Lights.LampArray.GetDeviceSelector()).AsTask().GetAwaiter().GetResult();
+            Dinamicos = achados.Select(d => d.Name).Distinct().ToList();
+        }
+        catch (Exception e) { Log.Write($"periféricos: não consegui listar a Iluminação Dinâmica ({e.Message})"); }
+    }
+
     private static string ConfigFile => Path.Combine(AppPaths.Dir, "perifericos.json");
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower };
 
@@ -93,6 +115,7 @@ public static class Perifericos
     private static void Resend()
     {
         _sentMouse = null; _sentTeclado = null;
+        _lerDinamicos = true;
         Wake.Set();
     }
 
@@ -157,6 +180,8 @@ public static class Perifericos
             Thread.Sleep(150);   // a transição do controle manda 30 quadros/s; aqui basta o último
             try
             {
+                bool antes = AlgumEncontrado;
+                if (_lerDinamicos) LerDinamicos();
                 var m = Target(Cfg.Mouse);
                 if (m != _sentMouse) { MouseOk = Razer.SetColor(m); _sentMouse = MouseOk ? m : null; }
                 string sig = TecladoSig(out var fundo, out var teclas);
@@ -165,6 +190,7 @@ public static class Perifericos
                     TecladoOk = teclas.Count == 0 ? EVision.SetColor(fundo) : EVision.SetKeys(fundo, teclas);
                     _sentTeclado = TecladoOk ? sig : null;
                 }
+                if (antes != AlgumEncontrado) Bus.Notify();
             }
             catch (Exception e) { Log.Write($"periféricos: erro ao enviar: {e.Message}"); }
         }
@@ -223,7 +249,7 @@ public static class Perifericos
         private static void LogOnce(string msg) { if (!_logged) Log.Write($"periféricos: {msg}"); _logged = true; }
     }
 
-    // ---------------- Redragon (EVision 320F:5000): relatório de saída 0x04, interface 1 ----------------
+    // ---------------- Redragon Kumara (chip EVision): relatório de saída 0x04, interface 1 ----------------
     private static class EVision
     {
         private const int Vid = 0x320F, Pid = 0x5000;
@@ -269,8 +295,20 @@ public static class Perifericos
             return true;
         }
 
-        private static HidDevice? Find() => DeviceList.Local.GetHidDevices(Vid, Pid)
-            .FirstOrDefault(d => d.GetMaxOutputReportLength() == 64 && d.DevicePath.Contains("mi_01", StringComparison.OrdinalIgnoreCase));
+        // 320F:5000 é o do Kumara V2. O do Pro não está documentado: pelo fabricante do chip, ele é reconhecido pelo nome
+        private static HidDevice? Find() => DeviceList.Local.GetHidDevices(Vid)
+            .FirstOrDefault(d => (d.ProductID == Pid || EhKumara(d)) && d.GetMaxOutputReportLength() == 64
+                                 && d.DevicePath.Contains("mi_01", StringComparison.OrdinalIgnoreCase));
+
+        private static bool EhKumara(HidDevice d)
+        {
+            try
+            {
+                string nome = d.GetProductName() ?? "";
+                return nome.Contains("Kumara", StringComparison.OrdinalIgnoreCase) || nome.Contains("K552", StringComparison.OrdinalIgnoreCase);
+            }
+            catch (Exception) { return false; }   // alguns aparelhos não deixam ler o nome
+        }
 
         private static void Packet(HidStream s, byte cmd, byte[] data, byte param = 0, bool fixedCmd = false, int offset = -1)
         {

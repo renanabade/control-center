@@ -99,11 +99,15 @@ Reinicie o PC depois de instalar os dois.
 
 ## Periféricos (mouse e teclado)
 
-Bloco **Periféricos** no painel. Funciona sem Synapse e sem o programa da Redragon (feche-os, senão eles brigam pela
-cor):
+Bloco **Periféricos** no painel, que só aparece se houver um aparelho compatível. Funciona sem Synapse e sem o programa
+da Redragon (feche-os, senão eles brigam pela cor):
 
 - **Razer DeathAdder V2** (`1532:0084`): logo e roda, protocolo Chroma (relatório de recurso de 90 bytes).
-- **Redragon Kumara V2** (`320F:5000`, chip EVision): modo estático, relatório 0x04 na interface 1.
+- **Redragon Kumara V2** (`320F:5000`) e **Kumara Pro** (mesmo fabricante do chip, EVision, reconhecido pelo nome do
+  produto, por USB): modo estático, relatório 0x04 na interface 1. O Pro ainda não foi testado com o aparelho na mão.
+- **Outros aparelhos:** ficam com a **Iluminação Dinâmica do Windows** (Configurações → Personalização). O painel mostra
+  os que encontrar e abre essa tela. A cor é escolhida lá porque, sem ser um app empacotado, o control-center só
+  controlaria a luz deles enquanto estivesse em primeiro plano, e ela voltaria ao fechar o painel.
 
 Cada um pode **seguir a cor do controle** (inclui cor por modo, cor do jogo no PS4 e a transição) ou ter cor própria,
 com brilho de 0 a 100%. Config em `%APPDATA%\win-control\perifericos.json`. Protocolos tirados do OpenRGB.
