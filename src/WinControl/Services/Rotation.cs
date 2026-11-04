@@ -50,7 +50,7 @@ public static class Rotation
         return telas;
     }
 
-    // \\?\DISPLAY#GSM5B55#...: o segundo pedaço identifica o modelo
+    // \\?\DISPLAY#ABC1234#...: o segundo pedaço identifica o modelo
     private static string IdDoEdid(string caminho) =>
         caminho.Split('#') is { Length: > 1 } p ? p[1].ToUpperInvariant() : "";
 
