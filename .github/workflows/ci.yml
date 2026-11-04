@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  # no Windows porque os testes da ponte usam named pipes de verdade, e é no Windows que eles rodam em produção
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          global-json-file: global.json
+      - name: Compilar o app da bandeja
+        run: dotnet build src/WinControl -c Release
+      - name: Testar a API
+        run: dotnet test --project tests/ControlCenter.Api.Tests -c Release
+
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Construir a imagem
+        run: docker build -t control-center-api .
+      - name: Subir e conferir o health
+        run: |
+          docker run -d --name api -p 5080:8080 \
+            -e Autenticacao__Usuario=ci \
+            -e Autenticacao__SenhaHash=hash-sem-uso-no-teste \
+            -e Autenticacao__ChaveJwt=chave-so-para-o-ci-com-mais-de-32-bytes \
+            control-center-api
+          for i in $(seq 1 30); do
+            if curl -fs http://localhost:5080/health/pronto; then exit 0; fi
+            sleep 1
+          done
+          docker logs api
+          exit 1

@@ -22,9 +22,14 @@ src/WinControl/
     DualSense.cs       DualSense por HID (USB 0x01/0x02, BT 0x31 com CRC32), luz, ViGEm (X360/DS4), HidHide
     Jogos.cs           modo automático: vigia a janela em primeiro plano (SetWinEventHook), categorias da Steam (57/58 = DualSense), jogos.json
     Perifericos.cs     luz do mouse Razer (Chroma) e do teclado Redragon (EVision), seguindo ou não o DualSense
+    ApiBridge.cs       servidor do named pipe que atende a ControlCenter.Api
     DisplayProjection.cs, Rotation.cs, Hotkeys.cs
+src/ControlCenter.Contracts/   mensagens e protocolo do pipe, usados pelo app e pela API
+src/ControlCenter.Api/         API REST (ASP.NET Core): veja api.md
+tests/ControlCenter.Api.Tests/ xUnit + WebApplicationFactory
 tools/
   pegar_chave.py       busca id + local_key pelo login QR do Smart Life
+  instalar-servico.ps1, remover-servico.ps1   a API como serviço do Windows
 ```
 
 ## Fluxo de dados

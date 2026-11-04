@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ControlCenter.Api/ControlCenter.Api.csproj" />
+    <Project Path="src/ControlCenter.Contracts/ControlCenter.Contracts.csproj" />
+    <Project Path="src/WinControl/WinControl.csproj">
+      <Platform Solution="*|Any CPU" Project="x64" />
+    </Project>
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ControlCenter.Api.Tests/ControlCenter.Api.Tests.csproj" />
+  </Folder>
+</Solution>

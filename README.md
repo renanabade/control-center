@@ -11,8 +11,10 @@ Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita e
 - **DualSense** por USB ou Bluetooth: cor e intensidade da luz, emulação de **Xbox 360** ou **PS4** (ViGEmBus) e
   troca automática do modo conforme o jogo.
 - **Periféricos**: luz do mouse Razer e do teclado Redragon, sem os programas dos fabricantes.
+- **API REST** (ASP.NET Core) para controlar cenas e aparelhos por outros dispositivos da rede: [docs/api.md](docs/api.md).
 
-Leve parado: cerca de 0,2% de um núcleo e 95 MB, porque reage a eventos do Windows em vez de ficar consultando.
+Leve parado: cerca de 0,2% de um núcleo e 95 MB, porque reage a eventos do Windows em vez de ficar consultando. A
+medição é sem controle virtual ativo: veja [docs/desempenho.md](docs/desempenho.md).
 
 ## Começo rápido
 
@@ -57,6 +59,7 @@ Detalhes e formato dos arquivos: [docs/configuracao.md](docs/configuracao.md).
 
 ## Documentação
 
+- [docs/api.md](docs/api.md): a API REST: como rodar, rotas, erros e segurança.
 - [docs/lampada.md](docs/lampada.md): configurar a lâmpada (chave, IP, Bluetooth).
 - [docs/configuracao.md](docs/configuracao.md): referência dos arquivos `lamp_config.json` e `conforto.json`.
 - [docs/dualsense.md](docs/dualsense.md): controle DualSense, luz, emulação, modo automático, drivers e periféricos.

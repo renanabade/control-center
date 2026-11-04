@@ -1,0 +1,15 @@
+# Copie .env.example para .env e preencha antes de subir. Sem isso, o compose para com erro em vez de subir sem senha.
+services:
+  api:
+    build: .
+    ports:
+      - "5080:8080"
+    environment:
+      Autenticacao__Usuario: ${CC_USUARIO:-admin}
+      Autenticacao__SenhaHash: ${CC_SENHA_HASH:?defina CC_SENHA_HASH no .env}
+      Autenticacao__ChaveJwt: ${CC_CHAVE_JWT:?defina CC_CHAVE_JWT no .env}
+    volumes:
+      - dados:/data
+
+volumes:
+  dados:
