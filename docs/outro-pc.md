@@ -19,7 +19,8 @@ Ou compile a partir do código, seguindo o [começo rápido](../README.md#começ
 Depois, em **Configurações → Geral → Importar**, escolha o arquivo e digite a senha. Na **mesma rede**, as lâmpadas
 aparecem sozinhas, porque o lugar é reconhecido pelo roteador. Se o IP de alguma tiver mudado, o app acha de novo.
 
-Por fim, feche e abra o app, para aplicar também o controle e os periféricos.
+Por fim, feche e abra o app, para aplicar também o controle e os periféricos. Se o outro PC tiver mais de uma tela,
+escolha o monitor do giro em **Configurações → Aparelhos**.
 
 ## Para agentes
 

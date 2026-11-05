@@ -14,6 +14,8 @@ src/WinControl/
   SelfTest.cs          teste sem interface contra o hardware real
   Services/
     Common.cs          AppPaths (%APPDATA%\win-control), Log, Bus (aviso de "algo mudou")
+    Ui.cs              volta para a thread de interface (Ui.Run) e textos de estado
+    Backup.cs          exporta e importa o arquivo .ccconfig (PBKDF2-SHA256 e AES-GCM)
     Core.cs            controles da lâmpada, poller, vigia da Luz Noturna, autostart
     Lamp.cs            Lampada (estado e comandos de uma, fallback Bluetooth) e Lamp (quais moram nesta rede, comandos de todas as daqui)
     Rede.cs            em que lugar o PC está, pelo MAC do roteador
@@ -27,7 +29,9 @@ src/WinControl/
     Perifericos.cs     luz do mouse Razer (Chroma) e do teclado Redragon (EVision), seguindo ou não o DualSense
     ApiBridge.cs       servidor do named pipe que atende a ControlCenter.Api; só abre com a API ativa
     ApiServico.cs      estado e controle do serviço da API (instalar, ligar, desligar), sempre pelo UAC
-    DisplayProjection.cs, Rotation.cs, Hotkeys.cs
+    DisplayProjection.cs  projetar (o mesmo do Win+P)
+    Rotation.cs        gira o monitor escolhido, identificado pelo EDID, nunca pela ordem das telas (CCD)
+    Hotkeys.cs         atalhos configuráveis, por hook de teclado, que funciona mesmo com a combinação registrada por outro programa
 src/ControlCenter.Contracts/   mensagens e protocolo do pipe, usados pelo app e pela API
 src/ControlCenter.Api/         API REST (ASP.NET Core): veja api.md
 tests/ControlCenter.Api.Tests/ xUnit + WebApplicationFactory
@@ -84,3 +88,19 @@ type $env:APPDATA\win-control\selftest.txt
 ```
 
 Antes de compilar, feche o app (bandeja → Sair). Com ele aberto, o `.exe` fica travado.
+
+Os testes da API não precisam de hardware: veja [api.md](api.md#desenvolver). A cada push e pull request, o
+[CI](../.github/workflows/ci.yml) compila o app, roda esses testes, confere o pacote publicado e sobe a imagem Docker.
+
+## Publicar uma versão
+
+1. Troque `<Version>` em `src/WinControl/WinControl.csproj` e registre a mudança em [CHANGELOG.md](../CHANGELOG.md).
+2. Gere o pacote:
+   ```powershell
+   dotnet publish src/WinControl -c Release -r win-x64 --self-contained -o pacote\control-center
+   Copy-Item LICENSE pacote\control-center
+   Compress-Archive pacote\control-center control-center-vX.Y.Z-win-x64.zip
+   ```
+3. **Teste abrindo a partir do zip extraído.** O pacote já saiu sem as telas compiladas uma vez, e o programa abria sem
+   conseguir carregar nenhuma janela.
+4. Publique: `gh release create vX.Y.Z control-center-vX.Y.Z-win-x64.zip --title "Control Center X.Y.Z"`.

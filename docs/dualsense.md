@@ -46,7 +46,7 @@ antigo: reinicie o jogo uma vez.
 PlayStation*: desativado), ou por jogo (Propriedades → Controle). Com ele ligado, a Steam captura o DualSense e entrega
 um Xbox ao jogo, desfazendo a escolha do control-center.
 
-`%APPDATA%\win-control\jogos.json`:
+As outras pastas e o modo padrão ficam em **Configurações → Aparelhos**. Tudo é salvo em `%APPDATA%\win-control\jogos.json`:
 
 ```json
 {
@@ -112,4 +112,4 @@ da Redragon (feche-os, senão eles brigam pela cor):
   controlaria a luz deles enquanto estivesse em primeiro plano, e ela voltaria ao fechar o painel.
 
 Cada um pode **seguir a cor do controle** (inclui cor por modo, cor do jogo no PS4 e a transição) ou ter cor própria,
-com brilho de 0 a 100%. Config em `%APPDATA%\win-control\perifericos.json`. Protocolos tirados do OpenRGB.
+com brilho de 0 a 100%. No teclado, cada tecla também pode ter a própria cor. Config em `%APPDATA%\win-control\perifericos.json`. Protocolos tirados do OpenRGB.
