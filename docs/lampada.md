@@ -36,7 +36,7 @@ guardada nunca volta para a tela.
 | `id` | ID do dispositivo. É o mesmo "ID virtual" que aparece no Smart Life. | `tools/pegar_chave.py` |
 | `local_key` | Chave de 16 caracteres que cifra os comandos | `tools/pegar_chave.py` |
 | `ip` | IP da lâmpada na rede | Pode ficar vazio: o app acha sozinho pelo aviso UDP que a lâmpada manda. |
-| `version` | Versão do protocolo | `3.3` |
+| `version` | Versão do protocolo: `3.3` ou `3.5` | O app descobre sozinho. |
 | `ble_mac` | MAC Bluetooth (opcional) | Veja abaixo |
 
 ## Buscar a chave (QR code, sem portal da Tuya)

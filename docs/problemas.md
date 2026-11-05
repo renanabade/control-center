@@ -43,6 +43,43 @@ Ferramentas como `tools/pegar_chave.py` também precisam rodar num terminal norm
 `sem resposta do DDC/CI`: ative **DDC/CI** no menu do próprio monitor. Alguns monitores só respondem pela entrada
 DisplayPort/HDMI que está ativa.
 
+## Girar monitor
+
+| Mensagem | O que fazer |
+|---|---|
+| `Escolha qual monitor girar...` | Com mais de uma tela, escolha o monitor em **Configurações → Aparelhos**. |
+| `O monitor escolhido nao esta ativo...` | Ligue esse monitor ou escolha outro. O app não gira outra tela no lugar dele. |
+
+## Atalhos de teclado
+
+- **Não disparam:** confira em **Configurações → Aparelhos** se o atalho não está desligado. Ele só funciona com o app aberto.
+- **Disparam junto com outro programa:** o app não bloqueia a tecla, então o outro programa também a recebe. Escolha
+  outra combinação.
+
+## Levar a configuração para outro PC
+
+| Mensagem | Causa |
+|---|---|
+| `Senha errada, ou o arquivo foi alterado.` | A senha é a criada ao exportar. Sem ela, não há como recuperar: exporte de novo. |
+| `Este arquivo não é uma configuração do Control Center.` | Escolha o `.ccconfig` gerado por **Exportar**. |
+
+## Periféricos
+
+- **O bloco não aparece:** o aparelho não foi reconhecido. Veja como
+  [adicionar outro modelo](dualsense.md#periféricos-mouse-e-teclado).
+- **A cor volta sozinha:** feche o Synapse ou o programa da Redragon, que disputam a cor com o app.
+
+## API
+
+- **`503` nos comandos:** o app da bandeja está fechado, ou a API não está ativa nele.
+- **Outro aparelho não alcança a API:** o firewall só abre a porta em redes particulares. A aba **API remota** avisa
+  quando a rede é pública.
+
+## Aviso do Windows ao abrir
+
+O executável não é assinado, então o SmartScreen pode avisar na primeira vez: **Mais informações → Executar assim mesmo**.
+Baixe só da página de [Releases](https://github.com/renanabade/control-center/releases).
+
 ## Painel
 
 - **Abre por trás de outra janela:** o app força o painel para a frente ao abrir pelo ícone. Se ainda acontecer,

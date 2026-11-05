@@ -1,7 +1,18 @@
-# Referência dos arquivos de configuração
+# Configuração
 
-Os dois arquivos ficam em `%APPDATA%\win-control`. Pela bandeja: **Abrir pasta de configuração**. A lâmpada, a API e as
-opções também se ajustam na janela **Configurações**, sem editar nada à mão.
+Quase tudo se ajusta em bandeja → **Configurações**, sem editar arquivo.
+
+| Aba | O que tem |
+|---|---|
+| **Geral** | Iniciar com o Windows, tema seguindo a Luz Noturna, telas juntas, agenda ativa, [levar para outro PC](outro-pc.md), abrir a pasta e o log. |
+| **Lâmpada** | Guia para buscar as lâmpadas da conta, adicionar, editar ou remover, a rede de cada uma, testar a conexão. Veja [lampada.md](lampada.md). |
+| **Cenas e agenda** | Editor de cenas, horários da agenda, predefinições da lâmpada e o que a Luz Noturna faz com as lâmpadas. |
+| **Aparelhos** | Monitor do giro e sentido, atalhos de teclado, modelos extras de periféricos, pastas de jogos e modo padrão. |
+| **API remota** | Instalar, ligar, desligar, deixar sempre ligada, trocar a senha e remover. Veja [api.md](api.md). |
+
+## Arquivos
+
+Ficam em `%APPDATA%\win-control`. Pela bandeja: **Abrir pasta de configuração**.
 
 ## `lamp_config.json`
 
@@ -82,3 +93,11 @@ Todas são opcionais. O que não aparece não é alterado.
 
 No painel aparecem as 4 primeiras cenas. No menu da bandeja aparecem todas. Os ícones conhecidos são Trabalho,
 Noite e Filme; as outras cenas usam um ícone genérico.
+
+## Outros arquivos
+
+| Arquivo | Conteúdo | Referência |
+|---|---|---|
+| `dualsense.json` | Cor, intensidade e modo do controle | [dualsense.md](dualsense.md#configuração) |
+| `jogos.json` | Pastas extras, modo padrão e o modo aprendido de cada jogo | [dualsense.md](dualsense.md#automático-por-jogo) |
+| `perifericos.json` | Cor e brilho do mouse e do teclado, cor por tecla, modelos extras | [dualsense.md](dualsense.md#periféricos-mouse-e-teclado) |

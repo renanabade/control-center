@@ -1,5 +1,9 @@
 ﻿# control-center
 
+[![CI](https://github.com/renanabade/control-center/actions/workflows/ci.yml/badge.svg)](https://github.com/renanabade/control-center/actions/workflows/ci.yml)
+[![Versão](https://img.shields.io/github/v/release/renanabade/control-center)](https://github.com/renanabade/control-center/releases/latest)
+[![Licença: MIT](https://img.shields.io/badge/licen%C3%A7a-MIT-blue)](LICENSE)
+
 Central de controle do Windows que mora na bandeja, ao lado do relógio. Feita em C# com WinUI 3.
 
 ![Painel de lâmpadas do Control Center, com cinco lâmpadas e os controles de brilho e temperatura](docs/imagens/painel.png)
@@ -25,8 +29,11 @@ medição é sem controle virtual ativo: veja [docs/desempenho.md](docs/desempen
 
 ## Instalar
 
+Precisa de Windows 11 22H2 ou mais novo, em x64. Não precisa instalar o .NET.
+
 Baixe a versão mais recente em [Releases](https://github.com/renanabade/control-center/releases), extraia e abra
-`WinControl.exe`. Já tem a configuração de outro PC? Veja [como levá-la](docs/outro-pc.md).
+`WinControl.exe`. O executável não é assinado, então o Windows pode mostrar um aviso na primeira vez. Já tem a
+configuração de outro PC? Veja [como levá-la](docs/outro-pc.md).
 
 ## Começo rápido, a partir do código
 
@@ -54,7 +61,7 @@ Sem a lâmpada configurada, o resto (telas, tema, cenas, projetar) funciona norm
 | Onde | O quê |
 |---|---|
 | Clique no ícone da bandeja | Abre o painel. Clicar fora ou apertar Esc fecha. |
-| Botão direito no ícone | Menu completo: cenas, presets da lâmpada, timer, projetar, tema, agenda, configurações. |
+| Botão direito no ícone | Menu completo: cenas, predefinições da lâmpada, timer, projetar, tema, agenda, configurações. |
 | Botão direito numa cena (no painel) | Escolher o tema da cena, ligar ou não a Luz Noturna, ou **salvar o estado atual na cena**. |
 | `Ctrl+Alt+R` | Gira o monitor escolhido em **Configurações → Aparelhos**. O atalho pode ser trocado ou desligado lá. |
 | `Win+Ctrl+Shift+D` | Alterna o tema claro/escuro. O atalho pode ser trocado ou desligado lá. |
@@ -66,17 +73,29 @@ Sem a lâmpada configurada, o resto (telas, tema, cenas, projetar) funciona norm
 - A cena **nunca acende uma lâmpada apagada**. Com a lâmpada ligada, ela ajusta na hora. Com a lâmpada apagada, o
   ajuste fica combinado para o **próximo "ligar"** e vale só para ele.
 - Ligar a lâmpada sem cena pendente **mantém o último estado**: brilho, temperatura e cor de quando ela apagou.
-- A **agenda** só aplica telas e tema. Nunca liga nem desliga a lâmpada.
+- A **agenda** nunca liga nem desliga a lâmpada. Vem desligada e vazia em instalação nova.
 - Quando uma cena muda a Luz Noturna, o "tema segue a Luz Noturna" não desfaz o tema escolhido pela cena.
 
 Detalhes e formato dos arquivos: [docs/configuracao.md](docs/configuracao.md).
 
+## Limites atuais
+
+- **Lâmpadas:** só Tuya, protocolos 3.3 e 3.5, com o mapa de comandos mais comum (DPs 20 a 26).
+- **Chaves das lâmpadas:** buscá-las exige Python. Quem já tem a chave pode digitá-la nas configurações.
+- **API:** instalar exige a pasta do projeto e o .NET 10 SDK.
+- **Periféricos:** controle direto só para os modelos citados e outros de mesmo protocolo.
+- **Interface:** só em português.
+
+O que falta melhorar ou testar com o aparelho na mão está nas
+[issues](https://github.com/renanabade/control-center/issues).
+
 ## Documentação
 
-- [docs/api.md](docs/api.md): a API REST: como rodar, rotas, erros e segurança.
+- [CHANGELOG.md](CHANGELOG.md): o que mudou em cada versão.
+- [docs/configuracao.md](docs/configuracao.md): o que há em cada aba das configurações e a referência dos arquivos.
 - [docs/lampada.md](docs/lampada.md): configurar a lâmpada (chave, IP, Bluetooth).
 - [docs/outro-pc.md](docs/outro-pc.md): levar a configuração para outro PC.
-- [docs/configuracao.md](docs/configuracao.md): referência dos arquivos `lamp_config.json` e `conforto.json`.
+- [docs/api.md](docs/api.md): a API REST: como rodar, rotas, erros e segurança.
 - [docs/dualsense.md](docs/dualsense.md): controle DualSense, luz, emulação, modo automático, drivers e periféricos.
 - [docs/problemas.md](docs/problemas.md): solução de problemas.
 - [docs/arquitetura.md](docs/arquitetura.md): como o código está organizado e como testar.

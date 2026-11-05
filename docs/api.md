@@ -107,7 +107,8 @@ Fora de `/api/v1`, e sem token: `/health` (o processo responde) e `/health/pront
   `lampada.ajustePendente: true`. Veja [as regras](../README.md#como-as-cenas-funcionam).
 - **Ajustar uma lâmpada apagada responde `409`** em vez de acendê-la. No painel, o ajuste com ela apagada também não a acende.
 - **Telas respondem `202`:** o DDC/CI é lento, então o brilho entra numa fila no app e pode ainda não ter chegado ao monitor.
-- **Ligar a Luz Noturna** também leva a lâmpada acesa a 1%, como já acontece quando ela liga por qualquer outro caminho.
+- **Ligar a Luz Noturna** também ajusta as lâmpadas acesas, como quando ela liga por qualquer outro caminho. O padrão é
+  1%, e o valor pode ser trocado ou desligado em **Configurações → Cenas e agenda**.
 
 ### Erros
 
