@@ -74,12 +74,30 @@ public static class DualSense
     private static ViGEmClient? _vigem;
     private static IVirtualGamepad? _pad;
     private static Modo? _padModo;
+    private static volatile bool _suspenso;
 
     public static void Start()
     {
         Load();
         SyncPerifericos();
         Jogos.Start();
+        // o ViGEmBus (arquivado) já derrubou o Windows com tela azul ao acordar da suspensão: antes de suspender
+        // larga o driver por completo, e ao voltar recria o controle virtual
+        Microsoft.Win32.SystemEvents.PowerModeChanged += (_, e) =>
+        {
+            if (e.Mode == Microsoft.Win32.PowerModes.Suspend)
+            {
+                _suspenso = true;
+                ReleaseBus();
+                Log.Write("suspensão: controle virtual e ViGEmBus liberados");
+            }
+            else if (e.Mode == Microsoft.Win32.PowerModes.Resume)
+            {
+                _suspenso = false;
+                Log.Write("voltou da suspensão");
+                Reapply();
+            }
+        };
         new Thread(Reader) { IsBackground = true, Name = "dualsense" }.Start();
         new Thread(Writer) { IsBackground = true, Name = "dualsense-saida" }.Start();
     }
@@ -87,7 +105,7 @@ public static class DualSense
     /// <summary>Ao sair: tira o controle virtual e devolve o real aos jogos.</summary>
     public static void Stop()
     {
-        DisconnectPad();
+        ReleaseBus();
         HidHide(false);
     }
 
@@ -241,7 +259,7 @@ public static class DualSense
                 _stream = null;
                 Conectado = false;
                 Bateria = null;
-                DisconnectPad();   // sem controle físico, o virtual some também
+                ReleaseBus();   // sem controle físico, o virtual some e o app solta o driver
                 Bus.Notify();
             }
         }
@@ -261,12 +279,13 @@ public static class DualSense
     {
         lock (PadGate)
         {
+            if (_suspenso) return;   // a volta da suspensão chama de novo
             var want = Conectado ? Efetivo : Modo.DualSense;
             if (_pad != null && _padModo == want) return;
             DisconnectPad();
             if (want != _lastWant) { _lastWant = want; StartTransition(); }
             Problema = null;
-            if (want == Modo.DualSense) { HidHide(false); Bus.Notify(); return; }
+            if (want == Modo.DualSense) { ReleaseBus(); HidHide(false); Bus.Notify(); return; }
             try
             {
                 _vigem ??= new ViGEmClient();
@@ -330,11 +349,23 @@ public static class DualSense
         lock (PadGate)
         {
             if (_pad == null) return;
-            try { _pad.Disconnect(); } catch { }
+            try { _pad.Disconnect(); } catch (Exception e) { Log.Write($"emulação: falha ao remover o controle virtual: {e.Message}"); }
             _pad = null;
             _padModo = null;
             SetGameColor(null);
             Rumble(0, 0);
+        }
+    }
+
+    /// <summary>Tira o controle virtual e fecha a conexão com o ViGEmBus: sem emulação, o app não fala com o driver.</summary>
+    private static void ReleaseBus()
+    {
+        lock (PadGate)
+        {
+            DisconnectPad();
+            if (_vigem == null) return;
+            try { _vigem.Dispose(); } catch (Exception e) { Log.Write($"emulação: falha ao fechar o ViGEmBus: {e.Message}"); }
+            _vigem = null;
         }
     }
 
